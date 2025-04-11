@@ -18,7 +18,7 @@ app.get('/', (req, res) => {
 
 // MongoDB connection
 mongoose
-  .connect(process.env.MONGODB_URI, {
+  .connect(process.env.DATABASE_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true
   })
