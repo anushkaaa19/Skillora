@@ -6,10 +6,10 @@ const OTP = require('../models/OTP')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-const cookie = require('cookie');
+const cookie = require('cookie-parser');
 const mailSender = require('../utils/mailSender');
 const otpTemplate = require('../mail/templates/emailVerificationTemplate');
-const { passwordUpdated } = require("../mail/templates/passwordUpdate");
+const { passwordUpdated } = require("../mail/passwordUpdate");
 
 // ================ SEND-OTP For Email Verification ================
 exports.sendOTP = async (req, res) => {
