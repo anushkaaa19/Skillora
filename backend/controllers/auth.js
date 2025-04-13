@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const cookie = require('cookie-parser');
 const mailSender = require('../utils/mailSender');
-const otpTemplate = require('../mail/templates/emailVerificationTemplate');
+const otpTemplate = require('../mail/emailVerificationTemplate');
 const { passwordUpdated } = require("../mail/passwordUpdate");
 
 // ================ SEND-OTP For Email Verification ================
@@ -46,8 +46,8 @@ exports.sendOTP = async (req, res) => {
 
         // create an entry for otp in DB
         const otpBody = await OTP.create({ email, otp });
-        // console.log('otpBody - ', otpBody);
-
+        console.log("OTP saved to DB:", otpBody);
+        
 
 
         // return response successfully

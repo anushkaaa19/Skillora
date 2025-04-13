@@ -2,7 +2,7 @@ const Rajorpay = require('razorpay');
 const instance = require('../config/rajorpay');
 const crypto = require('crypto');
 const mailSender = require('../utils/mailSender');
-const { courseEnrollmentEmail } = require('../mail/templates/courseEnrollmentEmail');
+const { courseEnrollmentEmail } = require('../mail/courseEnrollmentEmail');
 require('dotenv').config();
 
 const User = require('../models/user');

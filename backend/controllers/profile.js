@@ -13,7 +13,7 @@ const { convertSecondsToDuration } = require('../utils/secToDuration')
 exports.updateProfile = async (req, res) => {
     try {
         // extract data
-        const { gender = '', dateOfBirth = "", about = "", contactNumber = '', firstName, lastName } = req.body;
+        const { gender = '', dateOfBirth = "", about = "", contactNumber = '' } = req.body;
 
         // extract userId
         const userId = req.user.id;
@@ -27,8 +27,7 @@ exports.updateProfile = async (req, res) => {
         // console.log('User profileDetails -> ', profileDetails);
 
         // Update the profile fields
-        userDetails.firstName = firstName;
-        userDetails.lastName = lastName;
+        
         await userDetails.save()
 
         profileDetails.gender = gender;
