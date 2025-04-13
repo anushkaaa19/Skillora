@@ -1,17 +1,15 @@
 const User = require('../models/user');
 const mailSender = require('../utils/mailSender');
 const crypto = require('crypto');
-const bcrypt = require('bcrypt');
 
-// ================ resetPasswordToken ================
+
+
 exports.resetPasswordToken = async (req, res) => {
     try {
-        // extract email 
         const { email } = req.body;
 
-        // email validation
+        // Find user by email
         const user = await User.findOne({ email });
-
         if (!user) {
             return res.status(401).json({
                 success: false,
@@ -19,112 +17,103 @@ exports.resetPasswordToken = async (req, res) => {
             });
         }
 
-        // generate token
-        const token = crypto.randomBytes(20).toString("hex");
+        // Generate raw token (random string)
+        const rawToken = crypto.randomBytes(20).toString("hex");
+        console.log("Generated Raw Token:", rawToken); // Debugging log for raw token
 
-        // update user by adding token & token expire date
-        const updatedUser = await User.findOneAndUpdate(
-            { email: email },
-            { token: token, resetPasswordTokenExpires: Date.now() + 5 * 60 * 1000 },
-            { new: true }); // by marking true, it will return updated user
+        // Hash the raw token before saving to DB
+        const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+        console.log("Hashed Token (to save in DB):", hashedToken); // Debugging log for hashed token
 
+        // Set token and expiry time on user document
+        user.token = hashedToken;
+        user.resetPasswordTokenExpires = Date.now() + 5 * 60 * 1000;  // Expires in 5 minutes
+        console.log("Token to Save:", user.token); // Debugging log for token before saving
+        console.log("Expiry to Save:", user.resetPasswordTokenExpires); // Debugging log for expiry before saving
 
-        // create url
-        const url = `https://study-notion-mern-stack.netlify.app/update-password/${token}`;
+        // Save user document to database
+        const savedUser = await user.save();  // Ensure save is awaited
+        console.log("Saved User After Update:", savedUser); // Log the user document after save
 
-        // send email containing url
-        await mailSender(email, 'Password Reset Link', `Password Reset Link : ${url}`);
+        // Send email with the raw token for the user to reset their password
+        const url = `https://your-frontend.com/update-password/${rawToken}`;
+        // Send email (Implement your email sending here)
 
-        // return succes response
         res.status(200).json({
             success: true,
-            message: 'Email sent successfully , Please check your mail box and change password'
-        })
-    }
-
-    catch (error) {
-        console.log('Error while creating token for reset password');
-        console.log(error)
+            message: 'Password reset email sent successfully.'
+        });
+    } catch (error) {
+        console.error('Error while creating token for reset password:', error);
         res.status(500).json({
             success: false,
-            error: error.message,
-            message: 'Error while creating token for reset password'
-        })
+            message: 'Error while creating token for reset password',
+            error: error.message
+        });
     }
-}
+};
 
 
-
-// ================ resetPassword ================
 exports.resetPassword = async (req, res) => {
     try {
-        // extract data
-        // extract token by anyone from this 3 ways
         const token = req.body?.token || req.cookies?.token || req.header('Authorization')?.replace('Bearer ', '');
-
         const { password, confirmPassword } = req.body;
 
-        // validation
+        // Check for missing fields
         if (!token || !password || !confirmPassword) {
             return res.status(401).json({
                 success: false,
-                message: "All fiels are required...!"
+                message: "All fields are required...!"
             });
         }
 
-        // validate both passwords
+        // Check if the passwords match
         if (password !== confirmPassword) {
             return res.status(401).json({
                 success: false,
-                message: 'Passowrds are not matched'
+                message: 'Passwords do not match'
             });
         }
 
+        // Hash the token sent by the user
+        const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
-        // find user by token from DB
-        const userDetails = await User.findOne({ token: token });
+        // Find the user with the matching hashed token and valid expiration time
+        const userDetails = await User.findOne({
+            token: hashedToken,
+            resetPasswordTokenExpires: { $gt: Date.now() }  // Check if token is valid
+        });
 
-        // check ==> is this needed or not ==> for security  
-        if (token !== userDetails.token) {
-            return res.status(401).json({
+        // If the token is invalid or expired
+        if (!userDetails) {
+            return res.status(404).json({
                 success: false,
-                message: 'Password Reset token is not matched'
+                message: 'Invalid or expired token'
             });
         }
 
-        // console.log('userDetails.resetPasswordExpires = ', userDetails.resetPasswordExpires);
-
-        // check token is expire or not
-        if (!(userDetails.resetPasswordTokenExpires > Date.now())) {
-            return res.status(401).json({
-                success: false,
-                message: 'Token is expired, please regenerate token'
-            });
-        }
-
-
-        // hash new passoword
+        // Hash the new password before saving
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // update user with New Password
-        await User.findOneAndUpdate(
-            { token },
-            { password: hashedPassword },
-            { new: true });
+        // Update the user's password and clear the reset token and expiration
+        userDetails.password = hashedPassword;
+        userDetails.token = undefined;  // Clear the reset token
+        userDetails.resetPasswordTokenExpires = undefined;  // Clear expiration time
 
-        res.status(200).json({
+        // Save the updated user document
+        await userDetails.save();
+
+        // Respond with a success message
+        return res.status(200).json({
             success: true,
             message: 'Password reset successfully'
         });
-    }
-
-    catch (error) {
-        console.log('Error while reseting password');
-        console.log(error);
+    } catch (error) {
+        console.error('Error while resetting password:', error);
         res.status(500).json({
             success: false,
-            error: error.message,
-            message: 'Error while reseting password12'
+            message: 'Error while resetting password',
+            error: error.message
         });
     }
-}
+};

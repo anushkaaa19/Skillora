@@ -13,4 +13,3 @@ exports.connectDB = () => {
             process.exit(1);
         })
 };
-console.log("Mongo URI:", process.env.DATABASE_URL);

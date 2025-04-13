@@ -68,7 +68,7 @@ exports.deleteAccount = async (req, res) => {
     try {
         // extract user id
         const userId = req.user.id;
-        // console.log('userId = ', userId)
+        console.log(userId);
 
         // validation
         const userDetails = await User.findById(userId);
