@@ -8,11 +8,12 @@ import Banner from "../assets/Images/banner.mp4";
 import CodeBlocks from "../components/core/HomePage/CodeBlocks";
 import TimelineSection from "../components/core/HomePage/TimelineSection";
 import LearningLanguageSection from "../components/core/HomePage/LearningLanguageSection";
+import Footer from '../components/common/Footer';
+import InstructorSection from '../components/core/HomePage/InstructorSection';
 
 const Home = () => {
     return (
-        <div className='w-full flex flex-col items-center justify-center gap-8 py-12'>
-            <div className="w-full bg-richblack-900 flex flex-col items-center justify-center gap-8 py-12">
+        <div className='w-full flex flex-col items-center justify-center gap-8 bg-richblack-900 py-12 '>
 
             {/* Become Instructor Button */}
             <Link
@@ -119,7 +120,6 @@ const Home = () => {
                 </div>
 
             </div>
-            </div>
             {/* Section 2 */}
             <div className="bg-white w-[100%] text-richblack-700 flex flex-col items-center">
                 <div className="h-[310px]">
@@ -165,11 +165,17 @@ const Home = () => {
                         </div>
                     </div>
                 </div>
-                <TimelineSection/>
-                <LearningLanguageSection/>
+                <TimelineSection />
+                <LearningLanguageSection />
 
-                 
+
             </div>
+            {/* Section 3 */}
+            <div className='w-11/12 mx-auto max-w-maxContent flex flex-col items-center justify-between gap-8 bg-richblack-900 text-white'>
+                <InstructorSection />
+                <h2 className='text-center text-xl font-semibold mt-10'>Reviews from Other Learners</h2>
+            </div>
+            <Footer className="mt-auto"/>
 
 
 
