@@ -11,7 +11,8 @@ import LearningLanguageSection from "../components/core/HomePage/LearningLanguag
 
 const Home = () => {
     return (
-        <div className='w-full h-full flex flex-col items-center justify-center gap-8 bg-richblack-900 py-12'>
+        <div className='w-full flex flex-col items-center justify-center gap-8 py-12'>
+            <div className="w-full bg-richblack-900 flex flex-col items-center justify-center gap-8 py-12">
 
             {/* Become Instructor Button */}
             <Link
@@ -118,8 +119,9 @@ const Home = () => {
                 </div>
 
             </div>
+            </div>
             {/* Section 2 */}
-            <div className="bg-white w-[100%] text-richblack-700">
+            <div className="bg-white w-[100%] text-richblack-700 flex flex-col items-center">
                 <div className="h-[310px]">
                     <div className="w-11/12 max-w-maxContent flex flex-col items-center justify-between gap-5 mx-auto">
 
@@ -166,6 +168,7 @@ const Home = () => {
                 <TimelineSection/>
                 <LearningLanguageSection/>
 
+                 
             </div>
 
 
