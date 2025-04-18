@@ -1,10 +1,10 @@
 import { Route, Routes } from "react-router-dom";
-import Home from "./pages/Home"; // Assuming Home component is in a pages folder
+import Home from "./pages/Home";
 import "./App.css";
 
 function App() {
   return (
-    <div className="w-screen min-h-screen flex-col font-intern">
+    <div className="w-screen min-h-screen bg-richblack-900 flex flex-col">
       <Routes>
         <Route path="/" element={<Home />} />
       </Routes>
