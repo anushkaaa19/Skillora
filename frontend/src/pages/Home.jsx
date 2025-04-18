@@ -13,7 +13,9 @@ import InstructorSection from '../components/core/HomePage/InstructorSection';
 
 const Home = () => {
     return (
-        <div className='w-full flex flex-col items-center justify-center gap-8 bg-richblack-900 py-12 '>
+    <div className="flex flex-col min-h-screen w-screen bg-richblack-900 m-0 p-0">
+
+<div className='flex-1 w-full flex flex-col items-center gap-8 py-12 mx-auto'>
 
             {/* Become Instructor Button */}
             <Link
@@ -175,7 +177,8 @@ const Home = () => {
                 <InstructorSection />
                 <h2 className='text-center text-xl font-semibold mt-10'>Reviews from Other Learners</h2>
             </div>
-            <Footer className="mt-auto"/>
+            </div>
+            <Footer className="w-full bg-richblack-800 text-white py-8"/>
 
 
 
