@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import Home from "./pages/Home"; // Assuming Home component is in a pages folder
+import "./App.css";
 
 function App() {
   return (
