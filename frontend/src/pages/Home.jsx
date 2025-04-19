@@ -11,6 +11,7 @@ import LearningLanguageSection from "../components/core/HomePage/LearningLanguag
 import Footer from '../components/common/Footer';
 import InstructorSection from '../components/core/HomePage/InstructorSection';
 import ExploreMore from "../components/core/HomePage/ExploreMore"
+import Review from "../components/core/HomePage/Reviews"
 
 const Home = () => {
     return (
@@ -177,7 +178,7 @@ const Home = () => {
             {/* Section 3 */}
             <div className='w-11/12 mx-auto max-w-maxContent flex flex-col items-center justify-between gap-8 bg-richblack-900 text-white'>
                 <InstructorSection />
-                <h2 className='text-center text-xl font-semibold mt-10'>Reviews from Other Learners</h2>
+                <Review/>
             </div>
             </div>
             <Footer className="w-full bg-richblack-800 text-white py-8"/>
