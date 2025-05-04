@@ -1,42 +1,65 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
-
-// Import connectDB from the correct file
-const { connectDB } = require('./config/database'); // Use this import if your connectDB is in 'config/database.js'
-
-const authRoutes = require('./routes/user');
-
-// Load environment variables
-dotenv.config();
-
+const express = require('express')
 const app = express();
-const PORT = process.env.PORT || 4000;
 
-// Middleware
-// In backend (app.js)
-app.use(cors({
-    origin: process.env.CLIENT_URL || "http://localhost:8080",
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-  }));
-app.use(express.json());
+// packages
+const fileUpload = require('express-fileupload');
+const cookieParser = require('cookie-parser');
+const cors = require('cors');
+require('dotenv').config();
+
+// connection to DB and cloudinary
+const { connectDB } = require('./config/database');
+const { cloudinaryConnect } = require('./config/cloudinary');
+
+// routes
+const userRoutes = require('./routes/user');
+const profileRoutes = require('./routes/profile');
+const paymentRoutes = require('./routes/payments');
+const courseRoutes = require('./routes/course');
+
+
+// middleware 
+app.use(express.json()); // to parse json body
 app.use(cookieParser());
-
-// Routes
-app.use('/api/v1/auth', authRoutes);
-
-// Connect to DB and start server
-connectDB()
-    .then(() => {
-        // Your app code here after DB is connected
-        console.log('Server is running');
-        app.listen(PORT, () => {
-            console.log(`Server running on port ${PORT}`);
-        });
+app.use(
+    cors({
+        // origin: 'http://localhost:5173', // frontend link
+        origin: "*",
+        credentials: true
     })
-    .catch(err => {
-        console.error('Error connecting to DB:', err);
-    });
+);
+app.use(
+    fileUpload({
+        useTempFiles: true,
+        tempFileDir: '/tmp'
+    })
+)
+
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+    console.log(`Server Started on PORT ${PORT}`);
+});
+
+// connections
+connectDB();
+cloudinaryConnect();
+
+// mount route
+app.use('/api/v1/auth', userRoutes);
+app.use('/api/v1/profile', profileRoutes);
+app.use('/api/v1/payment', paymentRoutes);
+app.use('/api/v1/course', courseRoutes);
+
+
+
+
+// Default Route
+app.get('/', (req, res) => {
+    // console.log('Your server is up and running..!');
+    res.send(`<div>
+    This is Default Route  
+    <p>Everything is OK</p>
+    </div>`);
+})

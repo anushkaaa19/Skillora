@@ -6,10 +6,10 @@ const OTP = require('../models/OTP')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-const cookie = require('cookie-parser');
+const cookie = require('cookie');
 const mailSender = require('../utils/mailSender');
-const otpTemplate = require('../mail/emailVerificationTemplate');
-const { passwordUpdated } = require("../mail/passwordUpdate");
+const otpTemplate = require('../mail/templates/emailVerificationTemplate');
+const { passwordUpdated } = require("../mail/templates/passwordUpdate");
 
 // ================ SEND-OTP For Email Verification ================
 exports.sendOTP = async (req, res) => {
@@ -46,207 +46,201 @@ exports.sendOTP = async (req, res) => {
 
         // create an entry for otp in DB
         const otpBody = await OTP.create({ email, otp });
-        console.log("OTP saved to DB:", otpBody);
-        
+        // console.log('otpBody - ', otpBody);
+
 
 
         // return response successfully
         res.status(200).json({
             success: true,
+            otp,
             message: 'Otp sent successfully'
         });
     }
 
     catch (error) {
         console.log('Error while generating Otp - ', error);
-        res.status(500).json({
+        res.status(200).json({
             success: false,
             message: 'Error while generating Otp',
-            error: error.message
+            error: error.mesage
         });
     }
 }
-const { OAuth2Client } = require('google-auth-library');
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
 
 
 // ================ SIGNUP ================
 exports.signup = async (req, res) => {
     try {
-        const { googleToken } = req.body;
+        // extract data 
+        const { firstName, lastName, email, password, confirmPassword,
+            accountType, contactNumber, otp } = req.body;
 
-        // If the user is signing up via Google, we use the Google token
-        if (googleToken) {
-            const ticket = await client.verifyIdToken({
-                idToken: googleToken,
-                audience: process.env.GOOGLE_CLIENT_ID,  // Google Client ID
+        // validation
+        if (!firstName || !lastName || !email || !password || !confirmPassword || !accountType || !otp) {
+            return res.status(401).json({
+                success: false,
+                message: 'All fields are required..!'
             });
+        }
 
-            const payload = ticket.getPayload();
-            const { email } = payload;
-
-            // Check if user already exists in DB
-            const existingUser = await User.findOne({ email });
-            if (existingUser) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'User already registered, please login',
-                });
-            }
-
-            // Create new user
-            const newUser = await User.create({
-                firstName: payload.given_name,
-                lastName: payload.family_name,
-                email,
-                password: '',  // No password for Google Sign-In
-                accountType: 'Student',  // Default to Student or set as per your requirement
-                additionalDetails: await Profile.create({}),
-                approved: true,  // Set approved as needed
-                image: payload.picture, // Use Google's profile picture
+        // check both pass matches or not
+        if (password !== confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                messgae: 'passowrd & confirm password does not match, Please try again..!'
             });
+        }
 
-            // Generate JWT token
-            const userPayload = {
-                email: newUser.email,
-                id: newUser._id,
-                accountType: newUser.accountType,
+        // check user have registered already
+        const checkUserAlreadyExits = await User.findOne({ email });
+
+        // if yes ,then say to login
+        if (checkUserAlreadyExits) {
+            return res.status(400).json({
+                success: false,
+                message: 'User registered already, go to Login Page'
+            });
+        }
+
+        // find most recent otp stored for user in DB
+        const recentOtp = await OTP.findOne({ email }).sort({ createdAt: -1 }).limit(1);
+        // console.log('recentOtp ', recentOtp)
+
+        // .sort({ createdAt: -1 }): 
+        // It's used to sort the results based on the createdAt field in descending order (-1 means descending). 
+        // This way, the most recently created OTP will be returned first.
+
+        // .limit(1): It limits the number of documents returned to 1. 
+
+
+        // if otp not found
+        if (!recentOtp || recentOtp.length == 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Otp not found in DB, please try again'
+            });
+        } else if (otp !== recentOtp.otp) {
+            // otp invalid
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid Otp'
+            })
+        }
+
+        // hash - secure passoword
+        let hashedPassword = await bcrypt.hash(password, 10);
+
+        // additionDetails
+        const profileDetails = await Profile.create({
+            gender: null, dateOfBirth: null, about: null, contactNumber: null
+        });
+
+        let approved = "";
+        approved === "Instructor" ? (approved = false) : (approved = true);
+
+        // create entry in DB
+        const userData = await User.create({
+            firstName, lastName, email, password: hashedPassword, contactNumber,
+            accountType: accountType, additionalDetails: profileDetails._id,
+            approved: approved,
+            image: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName} ${lastName}`
+        });
+
+        // return success message
+        res.status(200).json({
+            success: true,
+            message: 'User Registered Successfully'
+        });
+    }
+
+    catch (error) {
+        console.log('Error while registering user (signup)');
+        console.log(error)
+        res.status(401).json({
+            success: false,
+            error: error.message,
+            messgae: 'User cannot be registered , Please try again..!'
+        })
+    }
+}
+
+
+// ================ LOGIN ================
+exports.login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        // validation
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: 'All fields are required'
+            });
+        }
+
+        // check user is registered and saved data in DB
+        let user = await User.findOne({ email }).populate('additionalDetails');
+
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: 'You are not registered with us'
+            });
+        }
+
+
+        // comapare given password and saved password from DB
+        if (await bcrypt.compare(password, user.password)) {
+            const payload = {
+                email: user.email,
+                id: user._id,
+                accountType: user.accountType // This will help to check whether user have access to route, while authorzation
             };
 
-            const token = jwt.sign(userPayload, process.env.JWT_SECRET, {
-                expiresIn: '24h',
+            // Generate token 
+            const token = jwt.sign(payload, process.env.JWT_SECRET, {
+                expiresIn: "24h",
             });
 
-            return res.status(200).json({
+            user = user.toObject();
+            user.token = token;
+            user.password = undefined; // we have remove password from object, not DB
+
+
+            // cookie
+            const cookieOptions = {
+                expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days
+                httpOnly: true
+            }
+
+            res.cookie('token', token, cookieOptions).status(200).json({
                 success: true,
-                message: 'User registered and logged in successfully',
+                user,
                 token,
-                user: newUser,
+                message: 'User logged in successfully'
             });
         }
+        // password not match
+        else {
+            return res.status(401).json({
+                success: false,
+                message: 'Password not matched'
+            });
+        }
+    }
 
-        // Normal signup flow (OTP, password, etc.) can go here
-        // This is where your existing signup code will be used.
-    } catch (error) {
-        console.log('Error during signup:', error);
+    catch (error) {
+        console.log('Error while Login user');
+        console.log(error);
         res.status(500).json({
             success: false,
-            message: 'Error while signing up user',
             error: error.message,
-        });
+            messgae: 'Error while Login user'
+        })
     }
-};
+}
 
-
-
-exports.login = async (req, res) => {
-  try {
-    console.log("Login request received:", {
-      body: req.body,
-      headers: req.headers
-    });
-
-    // Google Sign-In Flow
-    if (req.body.googleToken) {
-      console.log("Processing Google login...");
-      
-      try {
-        const ticket = await client.verifyIdToken({
-          idToken: req.body.googleToken,
-          audience: process.env.GOOGLE_CLIENT_ID,
-        });
-        const payload = ticket.getPayload();
-        console.log("Google payload:", {
-          email: payload.email,
-          verified: payload.email_verified,
-          name: payload.name
-        });
-
-        if (!payload.email_verified) {
-          console.warn("Email not verified");
-          return res.status(401).json({
-            success: false,
-            message: 'Google email not verified',
-          });
-        }
-
-        // User lookup/creation
-        let user = await User.findOne({ email: payload.email })
-          .populate('additionalDetails');
-        
-        if (!user) {
-          console.log("Creating new user...");
-          user = await User.create({
-            firstName: req.body.name?.split(' ')[0] || payload.given_name,
-            lastName: req.body.name?.split(' ')[1] || payload.family_name || '',
-            email: payload.email,
-            password: '',
-            accountType: 'Student',
-            approved: true,
-            image: req.body.avatar || payload.picture,
-            loginType: 'google',
-            additionalDetails: await Profile.create({}),
-          });
-          console.log("User created:", user._id);
-        }
-
-        // Token generation
-        const token = jwt.sign(
-          {
-            email: user.email,
-            id: user._id,
-            accountType: user.accountType,
-          },
-          process.env.JWT_SECRET,
-          { expiresIn: '24h' }
-        );
-
-        console.log("Login successful for:", user.email);
-        
-        // Response
-        return res.status(200)
-          .cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            maxAge: 3 * 24 * 60 * 60 * 1000
-          })
-          .json({
-            success: true,
-            message: 'Google login successful',
-            token,
-            user: {
-              id: user._id,
-              email: user.email,
-              firstName: user.firstName,
-              lastName: user.lastName,
-              accountType: user.accountType,
-              image: user.image
-            }
-          });
-      } catch (googleError) {
-        console.error("Google auth error:", googleError);
-        return res.status(401).json({
-          success: false,
-          message: 'Invalid Google token',
-        });
-      }
-    }
-
-    // ... normal login flow ...
-  } catch (error) {
-    console.error("Login controller error:", {
-      message: error.message,
-      stack: error.stack
-    });
-    return res.status(500).json({
-      success: false,
-      message: 'Internal server error',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
-  }
-};
 
 // ================ CHANGE PASSWORD ================
 exports.changePassword = async (req, res) => {
