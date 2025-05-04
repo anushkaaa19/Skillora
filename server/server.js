@@ -12,13 +12,16 @@ const authRoutes = require('./routes/user');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 4000;
 
 // Middleware
+// In backend (app.js)
 app.use(cors({
-  origin: process.env.CLIENT_URL,
-  credentials: true,
-}));
+    origin: process.env.CLIENT_URL || "http://localhost:8080",
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }));
 app.use(express.json());
 app.use(cookieParser());
 

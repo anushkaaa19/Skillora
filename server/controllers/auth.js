@@ -51,22 +51,24 @@ exports.sendOTP = async (req, res) => {
 
 
         // return response successfully
-        res.status(500).json({
+        res.status(200).json({
             success: true,
-            otp,
             message: 'Otp sent successfully'
         });
     }
 
     catch (error) {
         console.log('Error while generating Otp - ', error);
-        res.status(200).json({
+        res.status(500).json({
             success: false,
             message: 'Error while generating Otp',
-            error: error.mesage
+            error: error.message
         });
     }
 }
+const { OAuth2Client } = require('google-auth-library');
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
 
 
 // ================ SIGNUP ================
@@ -137,111 +139,114 @@ exports.signup = async (req, res) => {
 };
 
 
-// ================ LOGIN ================
-const { OAuth2Client } = require('google-auth-library');
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);  // Google Client ID
 
 exports.login = async (req, res) => {
-    try {
-        const { email, password, googleToken } = req.body;
+  try {
+    console.log("Login request received:", {
+      body: req.body,
+      headers: req.headers
+    });
 
-        // If the user is signing in via Google, we use the Google token
-        if (googleToken) {
-            const ticket = await client.verifyIdToken({
-                idToken: googleToken,
-                audience: process.env.GOOGLE_CLIENT_ID,  // Google Client ID
-            });
-
-            const payload = ticket.getPayload();
-            const { email } = payload;
-
-            // Check if user already exists in DB
-            let user = await User.findOne({ email }).populate('additionalDetails');
-            console.log("Processing Google login for:", email);
-
-            if (!user) {
-                console.log("Creating new user...");
-                // Create user logic here
-                user = await User.create({
-                    firstName: name.split(' ')[0],
-                    lastName: name.split(' ')[1] || '',
-                    email,
-                    password: '', // No password for Google sign-in
-                    accountType: 'Student', // Adjust based on your logic
-                    approved: true,
-                    image: `https://api.dicebear.com/5.x/initials/svg?seed=${name}`,
-                });
-                console.log("User created:", user);
-            }
-            
-            // Generate JWT token
-            const userPayload = {
-                email: user.email,
-                id: user._id,
-                accountType: user.accountType,
-            };
-
-            const token = jwt.sign(userPayload, process.env.JWT_SECRET, {
-                expiresIn: '24h',
-            });
-
-            // Send token in the response
-            return res.status(200).json({
-                success: true,
-                message: 'User logged in successfully',
-                token,
-                user,
-            });
-        }
-
-        // Normal login flow for non-Google login (email & password)
-        const checkUser = await User.findOne({ email }).populate('additionalDetails');
-        if (!checkUser) {
-            return res.status(401).json({
-                success: false,
-                message: 'You are not registered with us',
-            });
-        }
-
-        // Compare passwords
-        const isPasswordMatch = await bcrypt.compare(password, checkUser.password);
-        if (!isPasswordMatch) {
-            return res.status(401).json({
-                success: false,
-                message: 'Password not matched',
-            });
-        }
-
-        const payload = {
-            email: checkUser.email,
-            id: checkUser._id,
-            accountType: checkUser.accountType,
-        };
-
-        // Generate JWT token
-        const token = jwt.sign(payload, process.env.JWT_SECRET, {
-            expiresIn: '24h',
+    // Google Sign-In Flow
+    if (req.body.googleToken) {
+      console.log("Processing Google login...");
+      
+      try {
+        const ticket = await client.verifyIdToken({
+          idToken: req.body.googleToken,
+          audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        const payload = ticket.getPayload();
+        console.log("Google payload:", {
+          email: payload.email,
+          verified: payload.email_verified,
+          name: payload.name
         });
 
-        res.cookie('token', token, {
-            httpOnly: true,
-            expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days
-        }).status(200).json({
-            success: true,
-            message: 'User logged in successfully',
-            user: checkUser,
-            token,
-        });
-    } catch (error) {
-        console.log('Error during login:', error);
-        res.status(500).json({
+        if (!payload.email_verified) {
+          console.warn("Email not verified");
+          return res.status(401).json({
             success: false,
-            message: 'Error while logging in user',
-            error: error.message,
-        });
-    }
-};
+            message: 'Google email not verified',
+          });
+        }
 
+        // User lookup/creation
+        let user = await User.findOne({ email: payload.email })
+          .populate('additionalDetails');
+        
+        if (!user) {
+          console.log("Creating new user...");
+          user = await User.create({
+            firstName: req.body.name?.split(' ')[0] || payload.given_name,
+            lastName: req.body.name?.split(' ')[1] || payload.family_name || '',
+            email: payload.email,
+            password: '',
+            accountType: 'Student',
+            approved: true,
+            image: req.body.avatar || payload.picture,
+            loginType: 'google',
+            additionalDetails: await Profile.create({}),
+          });
+          console.log("User created:", user._id);
+        }
+
+        // Token generation
+        const token = jwt.sign(
+          {
+            email: user.email,
+            id: user._id,
+            accountType: user.accountType,
+          },
+          process.env.JWT_SECRET,
+          { expiresIn: '24h' }
+        );
+
+        console.log("Login successful for:", user.email);
+        
+        // Response
+        return res.status(200)
+          .cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            maxAge: 3 * 24 * 60 * 60 * 1000
+          })
+          .json({
+            success: true,
+            message: 'Google login successful',
+            token,
+            user: {
+              id: user._id,
+              email: user.email,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              accountType: user.accountType,
+              image: user.image
+            }
+          });
+      } catch (googleError) {
+        console.error("Google auth error:", googleError);
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid Google token',
+        });
+      }
+    }
+
+    // ... normal login flow ...
+  } catch (error) {
+    console.error("Login controller error:", {
+      message: error.message,
+      stack: error.stack
+    });
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
 
 // ================ CHANGE PASSWORD ================
 exports.changePassword = async (req, res) => {
