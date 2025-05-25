@@ -1,0 +1,133 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
+
+    --card: 224 71% 4%;
+    --card-foreground: 213 31% 91%;
+
+    --popover: 224 71% 4%;
+    --popover-foreground: 213 31% 91%;
+
+    --primary: 253 70% 75%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 254 31% 54%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 223 47% 11%;
+    --muted-foreground: 215.4 16.3% 66.9%;
+
+    --accent: 254 31% 54%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 253 70% 75%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 224 71% 4%;
+    --sidebar-foreground: 213 31% 91%;
+    --sidebar-primary: 253 70% 75%;
+    --sidebar-primary-foreground: 222.2 47.4% 11.2%;
+    --sidebar-accent: 254 31% 54%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-ring: 253 70% 75%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-space text-foreground font-sans;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+}
+
+/* Shooting star animation */
+.star {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8), 
+              0 0 20px 6px rgba(255, 255, 255, 0.6), 
+              0 0 30px 12px rgba(255, 255, 255, 0.4);
+  transform: rotate(45deg);
+  animation: shooting-star 5s linear infinite;
+}
+
+.star::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255,255,255,1), rgba(255,255,255,0));
+  transform: translateX(-100%);
+}
+
+.star:nth-child(1) {
+  top: 20%;
+  left: -100px;
+  animation-delay: 0s;
+  animation-duration: 6s;
+}
+
+.star:nth-child(2) {
+  top: 30%;
+  left: -100px;
+  animation-delay: 1s;
+  animation-duration: 7s;
+}
+
+.star:nth-child(3) {
+  top: 40%;
+  left: -100px;
+  animation-delay: 2.5s;
+  animation-duration: 8s;
+}
+
+.star:nth-child(4) {
+  top: 50%;
+  left: -100px;
+  animation-delay: 4s;
+  animation-duration: 9s;
+}
+
+.star:nth-child(5) {
+  top: 60%;
+  left: -100px;
+  animation-delay: 5.5s;
+  animation-duration: 10s;
+}
+
+/* Space background with stars */
+.space-bg {
+  background-color: #1A1F2C;
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+    radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
