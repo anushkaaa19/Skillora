@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { toast } from '@/components/ui/use-toast';
-import HeroSection from '@/components/HeroSection';
-import ShootingStars from '@/components/ShootingStars';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import FeaturedCourses from '@/components/FeaturedCourses';
-import LeaderboardSection from '@/components/LeaderboardSection';
-import StudyRoomPreview from '@/components/StudyRoomPreview';
-import FeatureSection from '@/components/FeatureSection';
+import { toast } from '../components/ui/use-toast';
+import HeroSection from '../components/HeroSection';
+import ShootingStars from '../components/ShootingStars';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import FeaturedCourses from '../components/FeaturedCourses';
+import LeaderboardSection from '../components/LeaderboardSection';
+import StudyRoomPreview from '../components/StudyRoomPreview';
+import FeatureSection from '../components/FeatureSection';
 
 const Index = () => {
   const [cartItems, setCartItems] = useState([]);

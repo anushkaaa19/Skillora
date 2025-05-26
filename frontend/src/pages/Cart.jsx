@@ -1,15 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import { Button } from '../components/ui/button';
+import { Card, CardContent } from '../components/ui/card';
+import { Separator } from '../components/ui/separator';
 import { ShoppingCart, Trash2, CreditCard } from 'lucide-react';
-import ShootingStars from '@/components/ShootingStars';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import { useAppSelector, useAppDispatch } from '@/redux/hooks';
-import { removeFromCart, clearCart } from '@/redux/slices/cartSlice';
-import { toast } from '@/hooks/use-toast';
+import ShootingStars from '../components/ShootingStars';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import { useAppSelector, useAppDispatch } from '../redux/hooks';
+import { removeFromCart, clearCart } from '../redux/slices/cartSlice';
+import { toast } from '../hooks/use-toast';
 
 const Cart = () => {
   const { items, total } = useAppSelector((state) => state.cart);

@@ -1,13 +1,13 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Button } from '../components/ui/button';
+import { Card } from '../components/ui/card';
 import { Download, Share2, ChevronLeft } from 'lucide-react';
-import ShootingStars from '@/components/ShootingStars';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import { useAppSelector } from '@/redux/hooks';
-import { toast } from '@/hooks/use-toast';
+import ShootingStars from '../components/ShootingStars';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import { useAppSelector } from '../redux/hooks';
+import { toast } from '../hooks/use-toast';
 
 const Certificate = () => {
   const { courseId } = useParams();
