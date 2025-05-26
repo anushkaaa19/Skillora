@@ -49,7 +49,7 @@ function App() {
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-        </TooltipProvider>
+            git push --force        </TooltipProvider>
       </QueryClientProvider>
     </Provider>
   );
