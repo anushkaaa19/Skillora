@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Progress } from '../components/ui/progress';
+import { Separator } from '../components/ui/separator';
 import { PlusCircle, Users, BookOpen, DollarSign, TrendingUp, Calendar, BarChart, DownloadCloud } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -17,10 +17,10 @@ import {
   CartesianGrid,
   Tooltip
 } from 'recharts';
-import ShootingStars from '@/components/ShootingStars';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import { useAppSelector } from '@/redux/hooks';
+import ShootingStars from '../components/ShootingStars';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import { useAppSelector } from '../redux/hooks';
 
 // Sample data for charts
 const revenueData = [

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
+import { Button } from "../components/ui/button";
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, LogOut, User } from 'lucide-react';
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "../components/ui/badge";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -10,10 +10,10 @@ import {
   DropdownMenuLabel, 
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { useAppSelector, useAppDispatch } from '@/redux/hooks';
-import { logout } from '@/redux/slices/authSlice';
+} from "../components/ui/dropdown-menu";
+import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
+import { useAppSelector, useAppDispatch } from '../redux/hooks';
+import { logout } from '../redux/slices/authSlice';
 
 const Navbar = ({ cartItemCount }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

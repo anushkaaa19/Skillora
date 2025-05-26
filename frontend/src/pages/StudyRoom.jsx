@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import ShootingStars from '@/components/ShootingStars';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
+import ShootingStars from '../components/ShootingStars';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Badge } from '../components/ui/badge';
+import { Input } from '../components/ui/input';
 import { Clock, Users, MessageSquare, BookOpen } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '../hooks/use-toast';
 
 const StudyRoom = () => {
   const { toast } = useToast();

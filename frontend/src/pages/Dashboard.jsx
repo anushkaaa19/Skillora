@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppSelector } from '@/redux/hooks';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import ShootingStars from '@/components/ShootingStars';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+import { useAppSelector } from '../redux/hooks';
+import { Card, CardContent } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import ShootingStars from '../components/ShootingStars';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 const Dashboard = () => {
   const navigate = useNavigate();

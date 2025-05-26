@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import ShootingStars from '@/components/ShootingStars';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import { toast } from "@/hooks/use-toast";
-import { useAppDispatch } from '@/redux/hooks';
-import { loginSuccess } from '@/redux/slices/authSlice';
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { Checkbox } from "../components/ui/checkbox";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/ui/card";
+import ShootingStars from '../components/ShootingStars';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import { toast } from "../hooks/use-toast";
+import { useAppDispatch } from '../redux/hooks';
+import { loginSuccess } from '../redux/slices/authSlice';
 
 const Login = () => {
   const [email, setEmail] = useState('');

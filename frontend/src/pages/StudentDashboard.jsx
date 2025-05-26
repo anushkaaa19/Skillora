@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Progress } from '../components/ui/progress';
 import { Calendar, BookOpen, Award, Clock, CheckCircle, Play, Download } from 'lucide-react';
-import ShootingStars from '@/components/ShootingStars';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import { useAppSelector } from '@/redux/hooks';
-import { Course } from '@/components/CourseCard';  // If this is TS only, you may remove this import in JS
+import ShootingStars from '../components/ShootingStars';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import { useAppSelector } from '../redux/hooks';
+import { Course } from '../components/CourseCard';  // If this is TS only, you may remove this import in JS
 
 const StudentDashboard = () => {
   const [activeTab, setActiveTab] = useState('myCourses');

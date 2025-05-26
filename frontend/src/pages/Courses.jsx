@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Slider } from "../components/ui/slider";
+import { Checkbox } from "../components/ui/checkbox";
+import { Input } from "../components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import { Badge } from "../components/ui/badge";
 import { Search, Filter } from 'lucide-react';
-import ShootingStars from '@/components/ShootingStars';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import CourseCard from '@/components/CourseCard';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { addToCart } from '@/redux/slices/cartSlice';
-import { setCourses } from '@/redux/slices/courseSlice';
-import { toast } from '@/hooks/use-toast';
+import ShootingStars from '../components/ShootingStars';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import CourseCard from '../components/CourseCard';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
+import { addToCart } from '../redux/slices/cartSlice';
+import { setCourses } from '../redux/slices/courseSlice';
+import { toast } from '../hooks/use-toast';
 
 // Sample course data
 const sampleCourses = [
