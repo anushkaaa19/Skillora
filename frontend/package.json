@@ -21,7 +21,6 @@
     "axios": "^1.9.0",
 <<<<<<< HEAD
 =======
-    "chat-app": "file:..",
 >>>>>>> b83a90ca (first commit)
     "class-variance-authority": "^0.7.1",
     "date-fns": "^4.1.0",
