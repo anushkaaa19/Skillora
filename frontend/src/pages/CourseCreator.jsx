@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
@@ -14,14 +13,13 @@ import ShootingStars from '../components/ShootingStars';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { toast } from '../hooks/use-toast';
-import { useAppDispatch } from '../redux/hooks';
-import { addCourse } from '../redux/slices/courseSlice';
-
+import { useCourseCreationStore } from '../redux/slices/useCourseCreationStore';
+import { useCourseStore } from '../redux/slices/courseSlice';
 const CourseCreator = () => {
   const [activeTab, setActiveTab] = useState("basicInfo");
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  
+  const { addCourse } = useCourseStore(); // Assuming Zustand course store
+
   // Course information state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -114,8 +112,8 @@ const CourseCreator = () => {
     };
 
     // Dispatch action to add the course
-    dispatch(addCourse(newCourse));
-    
+    addCourse(newCourse);
+        
     toast({
       title: "Course created successfully",
       description: "Your new course has been published.",

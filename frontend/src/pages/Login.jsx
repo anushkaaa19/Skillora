@@ -4,101 +4,114 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Checkbox } from "../components/ui/checkbox";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle
+} from "../components/ui/card";
 import ShootingStars from '../components/ShootingStars';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { toast } from "../hooks/use-toast";
-import { useAppDispatch } from '../redux/hooks';
-import { loginSuccess } from '../redux/slices/authSlice';
+import { auth, provider } from '../firebase';
+import { signInWithPopup } from 'firebase/auth';
+import { useAuthStore } from '../redux/slices/authSlice';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
+
+  const { loginStart, loginSuccess, loginFail, isLoading } = useAuthStore();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    
-    // Simulate API request
-    setTimeout(() => {
-      console.log('Login attempt with:', { email, password });
-      
-      // Simulate successful login
-      // In a real application, you would validate credentials against a backend
-      const role = email.includes('instructor') ? 'instructor' : 'student';
-      
-      // Dispatch login success action
-      dispatch(loginSuccess({
-        id: '123',
-        name: email.split('@')[0],
-        email,
-        role,
-      }));
-      
+    loginStart();
+
+    try {
+      const res = await fetch("http://localhost:4000/api/v1/auth/login", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      loginSuccess(data.user);
       toast({
         title: "Login successful",
-        description: `Welcome back, ${email.split('@')[0]}!`,
+        description: `Welcome ${data.user.name}`,
       });
-      
-      // Redirect based on role
-      if (role === 'instructor') {
-        navigate('/instructor/dashboard');
-      } else {
-        navigate('/student/dashboard');
-      }
-      
-      setIsLoading(false);
-    }, 1500);
+
+      navigate(data.user.role === "instructor" ? "/instructor/dashboard" : "/student/dashboard");
+    } catch (err) {
+      toast({
+        title: "Login failed",
+        description: err.message || "Something went wrong",
+        variant: "destructive",
+      });
+      loginFail();
+    }
   };
 
-  const handleGoogleSignIn = () => {
-    setIsLoading(true);
-    
-    // Simulate Google sign-in process
-    setTimeout(() => {
-      // Simulate successful login with Google
-      const role = Math.random() > 0.5 ? 'instructor' : 'student';
-      const randomName = `user${Math.floor(Math.random() * 1000)}`;
-      
-      dispatch(loginSuccess({
-        id: `google-${Date.now()}`,
-        name: randomName,
-        email: `${randomName}@gmail.com`,
-        role,
-        profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + randomName,
-      }));
-      
+  const handleGoogleSignIn = async () => {
+    loginStart();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      const token = await user.getIdToken();
+
+      const res = await fetch("http://localhost:5000/api/v1/auth/login", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          token,
+          email: user.email,
+          name: user.displayName,
+          avatar: user.photoURL,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      loginSuccess(data.user);
       toast({
         title: "Google login successful",
-        description: `Welcome, ${randomName}!`,
+        description: `Welcome ${data.user.name}`,
       });
-      
-      // Redirect based on role
-      if (role === 'instructor') {
-        navigate('/instructor/dashboard');
-      } else {
-        navigate('/student/dashboard');
-      }
-      
-      setIsLoading(false);
-    }, 1000);
+
+      navigate(data.user.role === "instructor" ? "/instructor/dashboard" : "/student/dashboard");
+    } catch (err) {
+      toast({
+        title: "Google login failed",
+        description: err.message,
+        variant: "destructive",
+      });
+      loginFail();
+    }
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-space space-bg">
       <ShootingStars />
       <Navbar cartItemCount={0} />
-      
+
       <main className="flex-grow flex items-center justify-center py-12 px-4">
         <div className="w-full max-w-md relative">
-          {/* Decorative elements */}
           <div className="absolute top-[-50px] right-[-30px] w-20 h-20 rounded-full bg-space-accent/20 filter blur-xl"></div>
           <div className="absolute bottom-[-30px] left-[-20px] w-16 h-16 rounded-full bg-space-secondary/30 filter blur-xl"></div>
-          
+
           <Card className="border-space-light bg-space-light/40 backdrop-blur-md">
             <CardHeader className="space-y-1">
               <CardTitle className="text-2xl font-heading text-center">Welcome back</CardTitle>
@@ -106,6 +119,7 @@ const Login = () => {
                 Enter your credentials to access your account
               </CardDescription>
             </CardHeader>
+
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
@@ -153,7 +167,7 @@ const Login = () => {
                   {isLoading ? "Signing in..." : "Sign In"}
                 </Button>
               </form>
-              
+
               <div className="mt-4">
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
@@ -163,22 +177,23 @@ const Login = () => {
                     <span className="bg-space px-2 text-gray-400">Or continue with</span>
                   </div>
                 </div>
-                
+
                 <div className="mt-4 grid grid-cols-1 gap-2">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="border-space-light text-white hover:bg-space-light"
                     onClick={handleGoogleSignIn}
                     disabled={isLoading}
                   >
                     <svg className="mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M20.283 10.356h-8.327v3.451h4.792c-.446 2.193-2.313 3.453-4.792 3.453a5.27 5.27 0 0 1-5.279-5.28 5.27 5.27 0 0 1 5.279-5.279c1.259 0 2.397.447 3.29 1.178l2.6-2.599c-1.584-1.381-3.615-2.233-5.89-2.233a8.908 8.908 0 0 0-8.934 8.934 8.908 8.908 0 0 0 8.934 8.934c4.467 0 8.529-3.249 8.529-8.934 0-.528-.081-1.097-.202-1.625z"></path>
+                      <path d="M20.283 10.356h-8.327v3.451h4.792c-.446 2.193-2.313 3.453-4.792 3.453a5.27 5.27 0 0 1-5.279-5.28 5.27 5.27 0 0 1 5.279-5.279c1.259 0 2.397.447 3.29 1.178l2.6-2.599c-1.584-1.381-3.615-2.233-5.89-2.233a8.908 8.908 0 0 0-8.934 8.934 8.908 8.908 0 0 0 8.934 8.934c4.467 0 8.529-3.249 8.529-8.934 0-.528-.081-1.097-.202-1.625z" />
                     </svg>
                     Sign in with Google
                   </Button>
                 </div>
               </div>
             </CardContent>
+
             <CardFooter className="flex flex-col space-y-4">
               <div className="text-center text-sm text-gray-400">
                 Don't have an account?{" "}
@@ -190,7 +205,7 @@ const Login = () => {
           </Card>
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );

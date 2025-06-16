@@ -7,14 +7,16 @@ import { Progress } from '../components/ui/progress';
 import { Calendar, BookOpen, Award, Clock, CheckCircle, Play, Download } from 'lucide-react';
 import ShootingStars from '../components/ShootingStars';
 import Navbar from '../components/Navbar';
+import { useAuthStore } from '../redux/slices/authSlice'; // ✅ Zustand
+import { useCourseStore } from '../redux/slices/courseSlice'; // ✅ adjust the path
+
 import Footer from '../components/Footer';
-import { useAppSelector } from '../redux/hooks';
 import { Course } from '../components/CourseCard';  // If this is TS only, you may remove this import in JS
 
 const StudentDashboard = () => {
   const [activeTab, setActiveTab] = useState('myCourses');
-  const { user } = useAppSelector(state => state.auth);
-  const { courses } = useAppSelector(state => state.courses);
+  const { user } = useAuthStore(); // ✅ Zustand user access
+  const courses = useCourseStore((state) => state.courses); // ✅ Zustand
   
   // Get enrolled courses (in a real app, this would come from the user's enrollment data)
   const enrolledCourses = courses.slice(0, 3);

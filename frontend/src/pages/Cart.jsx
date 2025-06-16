@@ -1,22 +1,24 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '../components/ui/button';
-import { Card, CardContent } from '../components/ui/card';
-import { Separator } from '../components/ui/separator';
-import { ShoppingCart, Trash2, CreditCard } from 'lucide-react';
-import ShootingStars from '../components/ShootingStars';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import { useAppSelector, useAppDispatch } from '../redux/hooks';
-import { removeFromCart, clearCart } from '../redux/slices/cartSlice';
-import { toast } from '../hooks/use-toast';
+import React from "react";
+import { Link } from "react-router-dom";
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
+import { Separator } from "../components/ui/separator";
+import { ShoppingCart, Trash2, CreditCard } from "lucide-react";
+import ShootingStars from "../components/ShootingStars";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import { useCartStore } from "../redux/slices/cartSlice";
+import { toast } from "../hooks/use-toast";
 
 const Cart = () => {
-  const { items, total } = useAppSelector((state) => state.cart);
-  const dispatch = useAppDispatch();
+  const items = useCartStore((state) => state.items);
+  const removeFromCart = useCartStore((state) => state.removeFromCart);
+  const clearCart = useCartStore((state) => state.clearCart);
+
+  const total = items.reduce((acc, item) => acc + item.price, 0);
 
   const handleRemoveItem = (id) => {
-    dispatch(removeFromCart(id));
+    removeFromCart(id);
     toast({
       title: "Item removed",
       description: "Course has been removed from your cart",
@@ -39,7 +41,7 @@ const Cart = () => {
     });
 
     setTimeout(() => {
-      dispatch(clearCart());
+      clearCart();
       toast({
         title: "Purchase successful!",
         description: "Thank you for your purchase. You can now access your courses.",
@@ -59,7 +61,7 @@ const Cart = () => {
             <p className="text-gray-400">
               {items.length === 0
                 ? "Your cart is empty. Add some courses and start learning!"
-                : `You have ${items.length} ${items.length === 1 ? 'course' : 'courses'} in your cart.`}
+                : `You have ${items.length} ${items.length === 1 ? "course" : "courses"} in your cart.`}
             </p>
           </div>
 
@@ -78,7 +80,10 @@ const Cart = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-4">
                 {items.map((course) => (
-                  <Card key={course.id} className="border-space-light bg-space-light/30 backdrop-blur-sm overflow-hidden">
+                  <Card
+                    key={course.id}
+                    className="border-space-light bg-space-light/30 backdrop-blur-sm overflow-hidden"
+                  >
                     <CardContent className="p-0">
                       <div className="flex flex-col sm:flex-row">
                         <div className="w-full sm:w-40 h-32">
@@ -90,10 +95,14 @@ const Cart = () => {
                         </div>
                         <div className="p-4 flex-grow flex flex-col justify-between">
                           <div>
-                            <h3 className="font-heading font-semibold text-white mb-1">{course.title}</h3>
+                            <h3 className="font-heading font-semibold text-white mb-1">
+                              {course.title}
+                            </h3>
                             <p className="text-sm text-gray-400 mb-2">{course.instructor}</p>
                             <div className="flex items-center space-x-2 text-xs text-gray-400">
-                              <span className="bg-space-light/50 px-2 py-0.5 rounded">{course.level}</span>
+                              <span className="bg-space-light/50 px-2 py-0.5 rounded">
+                                {course.level}
+                              </span>
                               <span>•</span>
                               <span>{course.duration}</span>
                             </div>
@@ -120,7 +129,9 @@ const Cart = () => {
               <div>
                 <Card className="border-space-light bg-space-light/30 backdrop-blur-sm sticky top-24">
                   <CardContent className="p-6">
-                    <h3 className="font-heading font-semibold text-white text-xl mb-4">Order Summary</h3>
+                    <h3 className="font-heading font-semibold text-white text-xl mb-4">
+                      Order Summary
+                    </h3>
 
                     <div className="space-y-3 mb-4">
                       <div className="flex justify-between text-gray-300">

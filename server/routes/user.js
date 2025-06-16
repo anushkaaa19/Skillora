@@ -32,27 +32,7 @@ const { getAllStudents, getAllInstructors } = require('../controllers/profile');
 router.post('/signup', signup);
 
 // Route for user login
-router.post("/login", async (req, res) => {
-    const { token, email, name, avatar } = req.body;
-  
-    try {
-      const decodedToken = await admin.auth().verifyIdToken(token);
-  
-      // Optionally check that decoded email matches provided email
-      if (decodedToken.email !== email) {
-        return res.status(401).json({ success: false, message: "Email mismatch" });
-      }
-  
-      return res.status(200).json({
-        success: true,
-        message: "Login successful",
-        user: { email, name, avatar },
-      });
-    } catch (err) {
-      console.error("Error verifying token:", err);
-      return res.status(401).json({ success: false, message: "Invalid Google token" });
-    }
-  });
+router.post("/login", login);
 
 // Route for sending OTP to the user's email
 router.post('/sendotp', sendOTP);
