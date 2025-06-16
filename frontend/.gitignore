@@ -12,6 +12,36 @@
 /build
 
 # misc
+# Dependency directories
+node_modules/
+frontend/node_modules/
+.cache/
+*.pack
+*.tmp
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+/build/
+dist/
+
+# Test output
+/coverage/
+
+# System files
+.DS_Store
+
+# Env files and credentials
+.env
+.env.*
+server/.env
+frontend/.env
+server/config/firebaseServiceAccountKey.json
+*.json.json  # if you accidentally saved double extensions
+
 .DS_Store
 .env.local
 .env.development.local
