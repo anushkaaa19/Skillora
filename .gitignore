@@ -35,4 +35,4 @@ frontend/node_modules/
 .env
 .env.local
 "@ | Out-File -FilePath .gitignore -Encoding utf8
-.server/config/firebaseServiceAccountKey.json
+server/config/firebaseServiceAccountKey.json
