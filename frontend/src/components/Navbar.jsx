@@ -12,20 +12,20 @@ import {
   DropdownMenuTrigger 
 } from "../components/ui/dropdown-menu";
 import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
-import { useAppSelector, useAppDispatch } from '../redux/hooks';
-import { logout } from '../redux/slices/authSlice';
+import { useAuthStore } from '../redux/slices/authSlice';
+import { useCartStore } from "../redux/slices/cartSlice"; // if you use zustand cart
 
-const Navbar = ({ cartItemCount }) => {
+const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { isAuthenticated, user } = useAppSelector(state => state.auth);
-  const { items } = useAppSelector(state => state.cart);
-  const dispatch = useAppDispatch();
+  const { isAuthenticated, user, logout } = useAuthStore();
+  console.log("👤 Logged-in user:", user);
+
+  const items = useCartStore((state) => state.items); // from zustand
+  const cartCount = items.length;
   const navigate = useNavigate();
 
-  const cartCount = items?.length || cartItemCount;
-
   const handleLogout = () => {
-    dispatch(logout());
+    logout();
     navigate('/');
   };
 
@@ -83,14 +83,19 @@ const Navbar = ({ cartItemCount }) => {
                         <AvatarImage src={user.profileImage} alt={user.name} />
                       ) : (
                         <AvatarFallback className="bg-space-accent text-white">
-                          {user.name.substring(0, 2).toUpperCase()}
-                        </AvatarFallback>
+  {`${user.firstName[0]}${user.lastName[0]}`.toUpperCase()}
+</AvatarFallback>
+
+                      
                       )}
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-space-light/90 backdrop-blur-md border-space-light">
-                  <DropdownMenuLabel className="text-white">{user.name}</DropdownMenuLabel>
+                <DropdownMenuLabel className="text-white">
+  {`${user.firstName} ${user.lastName}`}
+</DropdownMenuLabel>
+
                   <DropdownMenuSeparator className="bg-space-light" />
                   <DropdownMenuItem onClick={() => navigate(user.role === 'instructor' ? '/instructor/dashboard' : '/student/dashboard')}>
                     <User className="mr-2 h-4 w-4" />
@@ -182,6 +187,7 @@ const Navbar = ({ cartItemCount }) => {
     </nav>
   );
 };
+
 
 export default Navbar;
 

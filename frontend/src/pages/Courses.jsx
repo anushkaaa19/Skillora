@@ -11,9 +11,8 @@ import ShootingStars from '../components/ShootingStars';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import CourseCard from '../components/CourseCard';
-import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { addToCart } from '../redux/slices/cartSlice';
-import { setCourses } from '../redux/slices/courseSlice';
+import { useCartStore } from '../redux/slices/cartSlice';
+import { useCourseStore } from '../redux/slices/courseSlice';
 import { toast } from '../hooks/use-toast';
 
 // Sample course data
@@ -96,45 +95,40 @@ const Courses = () => {
   const [priceRange, setPriceRange] = useState([0, 100]);
   const [sortBy, setSortBy] = useState("popularity");
   const [filteredCourses, setFilteredCourses] = useState([]);
-  
-  const dispatch = useAppDispatch();
-  const { items } = useAppSelector(state => state.cart);
+
+  // Zustand
+  const courses = useCourseStore(state => state.courses);
+  const setCourses = useCourseStore(state => state.setCourses);
+  const items = useCartStore(state => state.items);
+  const addToCart = useCartStore(state => state.addToCart);
 
   useEffect(() => {
-    // In a real app, this would be an API call
-    dispatch(setCourses(sampleCourses));
-  }, [dispatch]);
-  
-  const courses = useAppSelector(state => state.courses.courses);
-  
+    setCourses(sampleCourses); // Load sample data
+  }, [setCourses]);
+
   useEffect(() => {
     let results = [...courses];
-    
-    // Apply search filter
+
     if (searchTerm) {
-      results = results.filter(course => 
-        course.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      results = results.filter(course =>
+        course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         course.instructor.toLowerCase().includes(searchTerm.toLowerCase()) ||
         course.category.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    
-    // Apply category filter
+
     if (selectedCategory !== "All") {
       results = results.filter(course => course.category === selectedCategory);
     }
-    
-    // Apply level filter
+
     if (selectedLevels.length > 0) {
       results = results.filter(course => selectedLevels.includes(course.level));
     }
-    
-    // Apply price range filter
-    results = results.filter(course => 
+
+    results = results.filter(course =>
       course.price >= priceRange[0] && course.price <= priceRange[1]
     );
-    
-    // Apply sorting
+
     switch (sortBy) {
       case "price-low":
         results.sort((a, b) => a.price - b.price);
@@ -145,36 +139,28 @@ const Courses = () => {
       case "rating":
         results.sort((a, b) => b.rating - a.rating);
         break;
-      default: // popularity
-        // For demo, we'll just keep the original order
+      default:
         break;
     }
     
     setFilteredCourses(results);
   }, [searchTerm, selectedCategory, selectedLevels, priceRange, sortBy, courses]);
 
+ 
   const handleAddToCart = (course) => {
     const isAlreadyInCart = items.some(item => item.id === course.id);
     if (isAlreadyInCart) {
-      toast({
-        title: "Already in cart",
-        description: "This course is already in your shopping cart",
-      });
+      toast({ title: "Already in cart", description: "This course is already in your cart" });
       return;
     }
-    
-    dispatch(addToCart(course));
-    toast({
-      title: "Course added to cart",
-      description: `${course.title} has been added to your cart`,
-    });
+
+    addToCart(course);
+    toast({ title: "Course added", description: `${course.title} has been added to your cart` });
   };
 
   const handleLevelToggle = (level) => {
-    setSelectedLevels(prev => 
-      prev.includes(level)
-        ? prev.filter(l => l !== level)
-        : [...prev, level]
+    setSelectedLevels(prev =>
+      prev.includes(level) ? prev.filter(l => l !== level) : [...prev, level]
     );
   };
 

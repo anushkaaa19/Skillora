@@ -1,34 +1,20 @@
-import { createSlice } from '@reduxjs/toolkit';
+// src/redux/slices/cartSlice.js
+import { create } from "zustand";
 
-const initialState = {
+export const useCartStore = create((set) => ({
   items: [],
-  total: 0,
-};
 
-const cartSlice = createSlice({
-  name: 'cart',
-  initialState,
-  reducers: {
-    addToCart: (state, action) => {
-      const existingItem = state.items.find(item => item.id === action.payload.id);
-      if (!existingItem) {
-        state.items.push(action.payload);
-        state.total += action.payload.price;
-      }
-    },
-    removeFromCart: (state, action) => {
-      const indexToRemove = state.items.findIndex(item => item.id === action.payload);
-      if (indexToRemove !== -1) {
-        state.total -= state.items[indexToRemove].price;
-        state.items.splice(indexToRemove, 1);
-      }
-    },
-    clearCart: (state) => {
-      state.items = [];
-      state.total = 0;
-    },
-  },
-});
+  addToCart: (item) =>
+    set((state) => {
+      // Prevent duplicates
+      if (state.items.find((i) => i.id === item.id)) return state;
+      return { items: [...state.items, item] };
+    }),
 
-export const { addToCart, removeFromCart, clearCart } = cartSlice.actions;
-export default cartSlice.reducer;
+  removeFromCart: (itemId) =>
+    set((state) => ({
+      items: state.items.filter((item) => item.id !== itemId),
+    })),
+
+  clearCart: () => set({ items: [] }),
+}));
