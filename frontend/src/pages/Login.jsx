@@ -47,10 +47,10 @@ const Login = () => {
       loginSuccess(data.user);
       toast({
         title: "Login successful",
-        description: `Welcome ${data.user.name}`,
+        description: `Welcome ${data.user.firstName || data.user.name}`,
       });
 
-      navigate(data.user.role === "instructor" ? "/instructor/dashboard" : "/student/dashboard");
+      navigate(data.user.accountType === "Instructor" ? "/instructor/dashboard" : "/student/dashboard");
     } catch (err) {
       toast({
         title: "Login failed",
@@ -63,12 +63,20 @@ const Login = () => {
 
   const handleGoogleSignIn = async () => {
     loginStart();
+  
     try {
+      console.log("🔄 Initiating Google Sign-In...");
+  
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       const token = await user.getIdToken();
-
-      const res = await fetch("http://localhost:4000/api/v1/auth/login", {
+  
+      console.log("✅ Firebase Google login successful");
+      console.log("👤 User Name:", user.displayName);
+      console.log("📧 Email:", user.email);
+      console.log("🪪 Token (truncated):", token.slice(0, 20) + "...");
+  
+      const res = await fetch("http://localhost:4000/api/v1/auth/google-login", {
         method: "POST",
         credentials: "include",
         headers: {
@@ -76,23 +84,28 @@ const Login = () => {
         },
         body: JSON.stringify({
           token,
-          email: user.email,
-          name: user.displayName,
-          avatar: user.photoURL,
         }),
       });
-
+  
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-
+  
+      if (!res.ok) {
+        console.error("❌ Backend responded with error:", data);
+        throw new Error(data.message || "Google login failed");
+      }
+  
+      console.log("✅ Backend login success, user:", data.user);
+  
       loginSuccess(data.user);
+  
       toast({
         title: "Google login successful",
-        description: `Welcome ${data.user.name}`,
+        description: `Welcome ${data.user.firstName || data.user.name}`,
       });
-
-      navigate(data.user.role === "instructor" ? "/instructor/dashboard" : "/student/dashboard");
+  
+      navigate(data.user.accountType === "Instructor" ? "/instructor/dashboard" : "/student/dashboard");
     } catch (err) {
+      console.error("🔥 Google Sign-In failed:", err.message);
       toast({
         title: "Google login failed",
         description: err.message,
@@ -101,7 +114,7 @@ const Login = () => {
       loginFail();
     }
   };
-
+  
   return (
     <div className="min-h-screen flex flex-col bg-space space-bg">
       <ShootingStars />
@@ -109,8 +122,8 @@ const Login = () => {
 
       <main className="flex-grow flex items-center justify-center py-12 px-4">
         <div className="w-full max-w-md relative">
-          <div className="absolute top-[-50px] right-[-30px] w-20 h-20 rounded-full bg-space-accent/20 filter blur-xl"></div>
-          <div className="absolute bottom-[-30px] left-[-20px] w-16 h-16 rounded-full bg-space-secondary/30 filter blur-xl"></div>
+          <div className="absolute top-[-50px] right-[-30px] w-20 h-20 rounded-full bg-space-accent/20 filter blur-xl" />
+          <div className="absolute bottom-[-30px] left-[-20px] w-16 h-16 rounded-full bg-space-secondary/30 filter blur-xl" />
 
           <Card className="border-space-light bg-space-light/40 backdrop-blur-md">
             <CardHeader className="space-y-1">
@@ -134,6 +147,7 @@ const Login = () => {
                     className="bg-space-light/50 border-space-light text-white"
                   />
                 </div>
+
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Password</Label>
@@ -150,15 +164,17 @@ const Login = () => {
                     className="bg-space-light/50 border-space-light text-white"
                   />
                 </div>
+
                 <div className="flex items-center space-x-2">
                   <Checkbox id="remember" />
                   <label
                     htmlFor="remember"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-300"
+                    className="text-sm font-medium leading-none text-gray-300"
                   >
                     Remember me
                   </label>
                 </div>
+
                 <Button
                   type="submit"
                   className="w-full bg-space-accent hover:bg-space-secondary"
@@ -171,7 +187,7 @@ const Login = () => {
               <div className="mt-4">
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-space-light"></span>
+                    <span className="w-full border-t border-space-light" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
                     <span className="bg-space px-2 text-gray-400">Or continue with</span>
@@ -196,7 +212,7 @@ const Login = () => {
 
             <CardFooter className="flex flex-col space-y-4">
               <div className="text-center text-sm text-gray-400">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <Link to="/signup" className="text-space-accent hover:underline">
                   Sign up
                 </Link>

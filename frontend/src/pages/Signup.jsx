@@ -13,6 +13,8 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { toast } from "../hooks/use-toast";
 import { useAuthStore } from '../redux/slices/authSlice';
+import { auth, provider } from '../firebase';
+import { signInWithPopup } from 'firebase/auth';
 
 const Signup = () => {
   const [firstName, setFirstName] = useState('');
@@ -90,7 +92,7 @@ const Signup = () => {
           confirmPassword,
           contactNumber,
           otp,
-          accountType: role,
+          accountType: role === "student" ? "Student" : "Instructor",
         }),
       });
 
@@ -120,27 +122,68 @@ const Signup = () => {
     }
   };
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     setIsLoading(true);
-    setTimeout(() => {
-      const randomName = `user${Math.floor(Math.random() * 1000)}`;
-      loginSuccess({
-        id: `google-${Date.now()}`,
-        name: randomName,
-        email: `${randomName}@gmail.com`,
-        role,
-        profileImage: `https://api.dicebear.com/7.x/avataaars/svg?seed=${randomName}`,
+  
+    try {
+      console.log("🚀 Initiating Google Sign-In...");
+  
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      const token = await user.getIdToken();
+  
+      console.log("✅ Firebase Auth successful:");
+      console.log("👤 Name:", user.displayName);
+      console.log("📧 Email:", user.email);
+      console.log("🪪 ID Token:", token.slice(0, 20) + "...");
+  
+      const roleToSend =
+        role?.toLowerCase() === "instructor" ? "Instructor" : "student";
+  
+      console.log("🎓 Role being sent to backend:", roleToSend);
+  
+      const res = await fetch("http://localhost:4000/api/v1/auth/google-login", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          token,
+          accountType: roleToSend,
+        }),
       });
+  
+      const data = await res.json();
+  
+      if (!res.ok) {
+        console.error("❌ Backend error response:", data);
+        throw new Error(data.message || "Google login failed");
+      }
+  
+      loginSuccess(data.user);
+  
       toast({
         title: "Google signup successful",
-        description: `Welcome to Skillora, ${randomName}!`,
+        description: `Welcome to Skillora, ${data.user.firstName}!`,
       });
-      navigate(role === 'instructor' ? '/instructor/dashboard' : '/student/dashboard');
+  
+      navigate(roleToSend === "Instructor" ? "/instructor/dashboard" : "/student/dashboard");
+    } catch (err) {
+      console.error("🔥 Google Sign-In failed:", err.message);
+      toast({
+        title: "Google signup failed",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
-
+  
   return (
+    // 🚀 Your full UI remains untouched
+    // 👇 This returns the same JSX you provided — full card, form, design
     <div className="min-h-screen flex flex-col bg-space space-bg">
       <ShootingStars />
       <Navbar cartItemCount={0} />
@@ -257,8 +300,8 @@ const Signup = () => {
                       <Label htmlFor="student" className="text-gray-300">Student</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="instructor" id="instructor" />
-                      <Label htmlFor="instructor" className="text-gray-300">Instructor</Label>
+                      <RadioGroupItem value="Instructor" id="Instructor" />
+                      <Label htmlFor="Instructor" className="text-gray-300">Instructor</Label>
                     </div>
                   </RadioGroup>
                 </div>

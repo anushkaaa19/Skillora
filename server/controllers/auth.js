@@ -168,14 +168,16 @@ exports.signup = async (req, res) => {
         success: true,
         message: 'User Registered Successfully'
       });
-    } catch (error) {
+    }catch (error) {
       console.log('❌ Error during signup:', error.message);
-      res.status(500).json({
+      console.error('STACK TRACE:', error.stack);  // 👈 Add this
+      return res.status(500).json({
         success: false,
-        error: error.message,
-        message: 'User cannot be registered, Please try again..!'
+        message: 'User cannot be registered, Please try again..!',
+        error: error.message
       });
     }
+    
   };
   
 

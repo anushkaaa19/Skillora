@@ -11,6 +11,8 @@ const {
 } = require('../controllers/auth');
 
 // Resetpassword controllers
+const { googleLogin } = require("../controllers/googleAuthController");
+
 const {
     resetPasswordToken,
     resetPassword,
@@ -27,6 +29,7 @@ const { getAllStudents, getAllInstructors } = require('../controllers/profile');
 // ********************************************************************************************************
 //                                      Authentication routes
 // ********************************************************************************************************
+router.post("/google-login", googleLogin);
 
 // Route for user signup
 router.post('/signup', signup);
