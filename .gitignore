@@ -25,5 +25,5 @@ dist/
 .env.*
 server/.env
 frontend/.env
-server/config/firebaseServiceAccountKey.json
+server/config/firebaseServiceAccountKey.json.json
 *.json.json  # if you accidentally saved double extensions
