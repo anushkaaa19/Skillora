@@ -185,9 +185,13 @@ const admin = require('../config/firebaseAdmin'); // Firebase Admin SDK
 exports.login = async (req, res) => {
     try {
         const { email, password, token } = req.body;
+        console.log("🔥 Login route hit");
+        console.log("📨 Request body:", req.body);
 
         // ========== Case 1: Google OAuth Login ==========
         if (token) {
+          console.log("🔐 Google login path");
+          console.log("📛 Token:", token);
             const decodedToken = await admin.auth().verifyIdToken(token);
 
             // Check token email matches request email
@@ -215,6 +219,8 @@ exports.login = async (req, res) => {
                     contactNumber: null,
                     password: "", // No password for Google auth
                     accountType: "Student", // Default role
+                    loginType: "google",     // ✅ add this line
+
                     additionalDetails: profileDetails._id,
                     approved: true,
                     image: decodedToken.picture || `https://api.dicebear.com/5.x/initials/svg?seed=${firstName} ${lastName}`

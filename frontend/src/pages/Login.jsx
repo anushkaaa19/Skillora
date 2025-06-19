@@ -68,7 +68,7 @@ const Login = () => {
       const user = result.user;
       const token = await user.getIdToken();
 
-      const res = await fetch("http://localhost:5000/api/v1/auth/login", {
+      const res = await fetch("http://localhost:4000/api/v1/auth/login", {
         method: "POST",
         credentials: "include",
         headers: {
