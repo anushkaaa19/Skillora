@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from '../components/ui/use-toast';
 import HeroSection from '../components/HeroSection';
 import ShootingStars from '../components/ShootingStars';
@@ -6,58 +6,15 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import FeaturedCourses from '../components/FeaturedCourses';
 import LeaderboardSection from '../components/LeaderboardSection';
-import StudyRoomPreview from '../components/StudyRoomPreview';
 import FeatureSection from '../components/FeatureSection';
+import { useAuthStore } from '../redux/slices/authSlice';
+
 
 const Index = () => {
   const [cartItems, setCartItems] = useState([]);
-
-  const featuredCourses = [
-    {
-      id: '1',
-      title: 'Advanced JavaScript: From Fundamentals to Functional JS',
-      instructor: 'Dr. Sarah Mitchell',
-      image: 'https://images.unsplash.com/photo-1633356122102-3fe601e05bd2',
-      price: 49.99,
-      rating: 4.8,
-      duration: '20 hours',
-      level: 'Intermediate',
-      category: 'Web Development'
-    },
-    {
-      id: '2',
-      title: 'Machine Learning Fundamentals with Python',
-      instructor: 'Prof. Michael Chen',
-      image: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485',
-      price: 59.99,
-      rating: 4.9,
-      duration: '30 hours',
-      level: 'Advanced',
-      category: 'Data Science'
-    },
-    {
-      id: '3',
-      title: 'UI/UX Design Principles and Best Practices',
-      instructor: 'Jessica Lee',
-      image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5',
-      price: 39.99,
-      rating: 4.7,
-      duration: '15 hours',
-      level: 'Beginner',
-      category: 'Design'
-    },
-    {
-      id: '4',
-      title: 'Full Stack Web Development with MERN Stack',
-      instructor: 'Alex Johnson',
-      image: 'https://images.unsplash.com/photo-1581276879432-15e50529f34b',
-      price: 69.99,
-      rating: 4.6,
-      duration: '40 hours',
-      level: 'Advanced',
-      category: 'Web Development'
-    }
-  ];
+  const [featuredCourses, setFeaturedCourses] = useState([]);
+  
+  const { isAuthenticated } = useAuthStore();
 
   const leaderboardUsers = [
     {
@@ -102,23 +59,51 @@ const Index = () => {
     }
   ];
 
+  useEffect(() => {
+    const fetchFeaturedCourses = async () => {
+      try {
+        const res = await fetch('http://localhost:4000/api/v1/course/getAllCourses');
+        const json = await res.json();
+        if (json.success) {
+          const topRated = json.data
+            .filter(course => course.rating >= 4.5)
+            .slice(0, 4);
+          setFeaturedCourses(topRated);
+        } else {
+          toast({ title: "Error", description: json.message, variant: "destructive" });
+        }
+      } catch (error) {
+        console.error("Failed to fetch courses", error);
+        toast({ title: "Error", description: "Could not load featured courses", variant: "destructive" });
+      }
+    };
+
+    fetchFeaturedCourses();
+  }, []);
   const handleAddToCart = (course) => {
-    const existingCourse = cartItems.find(item => item.id === course.id);
-    
-    if (existingCourse) {
+    if (!isAuthenticated) {
+      toast({
+        title: "Login required",
+        description: "Please log in to add courses to your cart.",
+        variant: "destructive",
+      });
+      return;
+    }
+  
+    const alreadyInCart = cartItems.find(item => item._id === course._id);
+    if (alreadyInCart) {
       toast({
         title: "Already in cart",
-        description: `${course.title} is already in your cart.`,
+        description: `${course.courseName} is already in your cart.`,
         variant: "destructive"
       });
       return;
     }
-    
+  
     setCartItems([...cartItems, course]);
-    
     toast({
       title: "Added to cart",
-      description: `${course.title} has been added to your cart.`,
+      description: `${course.courseName} has been added to your cart.`,
     });
   };
 
@@ -126,15 +111,14 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-space space-bg">
       <ShootingStars />
       <Navbar cartItemCount={cartItems.length} />
-      
+
       <main className="flex-grow">
         <HeroSection />
         <FeaturedCourses courses={featuredCourses} onAddToCart={handleAddToCart} />
         <FeatureSection />
-        <StudyRoomPreview />
         <LeaderboardSection users={leaderboardUsers} />
       </main>
-      
+
       <Footer />
     </div>
   );

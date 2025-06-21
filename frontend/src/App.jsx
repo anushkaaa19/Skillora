@@ -8,7 +8,6 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Courses from "./pages/Courses";
-import StudyRoom from "./pages/StudyRoom";
 import Leaderboard from "./pages/Leaderboard";
 import AskDoubts from "./pages/AskDoubts";
 import NotFound from "./pages/NotFound";
@@ -18,6 +17,13 @@ import StudentDashboard from "./pages/StudentDashboard";
 import CourseCreator from "./pages/CourseCreator";
 import Certificate from "./pages/Certificate";
 import Dashboard from "./pages/Dashboard";
+import ProtectedRoute from './components/ProtectedRoute'; // add this at top
+import CourseDetail from './pages/CourseDetail'; // or wherever it's located
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import CheckEmailPage from "./pages/CheckEmail";
+
+
 import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
@@ -30,15 +36,27 @@ function App() {
         <Sonner />
         
           <Routes>
+          <Route path="/check-email" element={<CheckEmailPage />} />
+
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/courses" element={<Courses />} />
-            <Route path="/study-room" element={<StudyRoom />} />
-            <Route path="/leaderboard" element={<Leaderboard />} />
-            <Route path="/doubts" element={<AskDoubts />} />
-            <Route path="/cart" element={<Cart />} />
+            <Route path="/leaderboard" element={
+  <ProtectedRoute><Leaderboard /></ProtectedRoute>
+} />
+<Route path="/doubts" element={
+  <ProtectedRoute><AskDoubts /></ProtectedRoute>
+} />
+<Route path="/cart" element={
+  <ProtectedRoute><Cart /></ProtectedRoute>
+} />
+<Route path="/courses/:courseId" element={<CourseDetail />} />
+
             <Route path="/dashboard" element={<Dashboard />} />
+            
+<Route path="/forgot-password" element={<ForgotPassword />} />
+<Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
             <Route path="/instructor/courses/create" element={<CourseCreator />} />

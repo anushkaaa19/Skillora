@@ -1,6 +1,7 @@
-import { createSlice } from '@reduxjs/toolkit';
+// src/store/useProfileStore.js
+import { create } from 'zustand';
 
-const initialState = {
+export const useProfileStore = create((set) => ({
   bio: '',
   location: '',
   website: '',
@@ -10,81 +11,60 @@ const initialState = {
   socialLinks: {},
   loading: false,
   error: null,
-};
 
-const profileSlice = createSlice({
-  name: 'profile',
-  initialState,
-  reducers: {
-    setLoading: (state, action) => {
-      state.loading = action.payload;
-    },
-    setError: (state, action) => {
-      state.error = action.payload;
-    },
-    setProfile: (state, action) => {
-      return { ...state, ...action.payload, loading: false, error: null };
-    },
-    updateBio: (state, action) => {
-      state.bio = action.payload;
-    },
-    addEducation: (state, action) => {
-      state.education.push(action.payload);
-    },
-    updateEducation: (state, action) => {
-      const index = state.education.findIndex(edu => edu.id === action.payload.id);
-      if (index !== -1) {
-        state.education[index] = action.payload;
-      }
-    },
-    removeEducation: (state, action) => {
-      state.education = state.education.filter(edu => edu.id !== action.payload);
-    },
-    addExperience: (state, action) => {
-      state.experience.push(action.payload);
-    },
-    updateExperience: (state, action) => {
-      const index = state.experience.findIndex(exp => exp.id === action.payload.id);
-      if (index !== -1) {
-        state.experience[index] = action.payload;
-      }
-    },
-    removeExperience: (state, action) => {
-      state.experience = state.experience.filter(exp => exp.id !== action.payload);
-    },
-    addSkill: (state, action) => {
-      state.skills.push(action.payload);
-    },
-    updateSkill: (state, action) => {
-      const index = state.skills.findIndex(skill => skill.id === action.payload.id);
-      if (index !== -1) {
-        state.skills[index] = action.payload;
-      }
-    },
-    removeSkill: (state, action) => {
-      state.skills = state.skills.filter(skill => skill.id !== action.payload);
-    },
-    updateSocialLinks: (state, action) => {
-      state.socialLinks = { ...state.socialLinks, ...action.payload };
-    },
-  },
-});
+  setLoading: (value) => set({ loading: value }),
+  setError: (error) => set({ error }),
 
-export const {
-  setLoading,
-  setError,
-  setProfile,
-  updateBio,
-  addEducation,
-  updateEducation,
-  removeEducation,
-  addExperience,
-  updateExperience,
-  removeExperience,
-  addSkill,
-  updateSkill,
-  removeSkill,
-  updateSocialLinks,
-} = profileSlice.actions;
+  setProfile: (profile) => set((state) => ({
+    ...state,
+    ...profile,
+    loading: false,
+    error: null,
+  })),
 
-export default profileSlice.reducer;
+  updateBio: (bio) => set({ bio }),
+
+  addEducation: (edu) =>
+    set((state) => ({ education: [...state.education, edu] })),
+  updateEducation: (updatedEdu) =>
+    set((state) => ({
+      education: state.education.map((edu) =>
+        edu.id === updatedEdu.id ? updatedEdu : edu
+      ),
+    })),
+  removeEducation: (id) =>
+    set((state) => ({
+      education: state.education.filter((edu) => edu.id !== id),
+    })),
+
+  addExperience: (exp) =>
+    set((state) => ({ experience: [...state.experience, exp] })),
+  updateExperience: (updatedExp) =>
+    set((state) => ({
+      experience: state.experience.map((exp) =>
+        exp.id === updatedExp.id ? updatedExp : exp
+      ),
+    })),
+  removeExperience: (id) =>
+    set((state) => ({
+      experience: state.experience.filter((exp) => exp.id !== id),
+    })),
+
+  addSkill: (skill) =>
+    set((state) => ({ skills: [...state.skills, skill] })),
+  updateSkill: (updatedSkill) =>
+    set((state) => ({
+      skills: state.skills.map((skill) =>
+        skill.id === updatedSkill.id ? updatedSkill : skill
+      ),
+    })),
+  removeSkill: (id) =>
+    set((state) => ({
+      skills: state.skills.filter((skill) => skill.id !== id),
+    })),
+
+  updateSocialLinks: (links) =>
+    set((state) => ({
+      socialLinks: { ...state.socialLinks, ...links },
+    })),
+}));

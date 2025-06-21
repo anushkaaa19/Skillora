@@ -9,32 +9,40 @@ import {
 } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
+import { useAuthStore } from '../redux/slices/authSlice';
 import { Label } from '../components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Separator } from '../components/ui/separator';
 import { BookOpen, Briefcase, Award, Link as LinkIcon, MapPin, Mail, Trash, Plus, Save } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../redux/hooks';
-import { 
-  updateBio, 
-  addEducation, 
-  updateEducation, 
-  removeEducation, 
-  addExperience, 
-  updateExperience, 
-  removeExperience, 
-  addSkill, 
-  removeSkill 
-} from '../redux/slices/profileSlice';
+import { useProfileStore } from '../redux/slices/profileSlice';
+
 import ShootingStars from '../components/ShootingStars';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { v4 as uuidv4 } from 'uuid';
 
 const Profile = () => {
-  const dispatch = useAppDispatch();
-  const { user } = useAppSelector(state => state.auth);
-  const { bio, location, website, education, experience, skills, socialLinks } = useAppSelector(state => state.profile);
-  
+  const { user } = useAuthStore(); // instead of useAppSelector(state => state.auth)
+  const {
+    bio,
+    location,
+    website,
+    education,
+    experience,
+    skills,
+    updateBio,
+    addEducation,
+    removeEducation,
+    addExperience,
+    removeExperience,
+    addSkill,
+    removeSkill,
+    setProfile,         // optional: if you need bulk update
+    updateEducation,    // if needed
+    updateExperience    // if needed
+  } = useProfileStore();
+    
   const [activeTab, setActiveTab] = useState('profile');
   const [bioText, setBioText] = useState(bio);
   const [locationText, setLocationText] = useState(location);
@@ -67,14 +75,14 @@ const Profile = () => {
   });
   
   const handleSaveBio = () => {
-    dispatch(updateBio(bioText));
+    updateBio(bioText);
   };
   
   const handleAddEducation = () => {
-    dispatch(addEducation({
+    addEducation({
       id: uuidv4(),
       ...newEducation
-    }));
+    });
     setNewEducation({
       institution: '',
       degree: '',
@@ -86,10 +94,10 @@ const Profile = () => {
   };
   
   const handleAddExperience = () => {
-    dispatch(addExperience({
+    addExperience({
       id: uuidv4(),
       ...newExperience
-    }));
+    });
     setNewExperience({
       company: '',
       position: '',
@@ -101,15 +109,16 @@ const Profile = () => {
   };
   
   const handleAddSkill = () => {
-    dispatch(addSkill({
+    addSkill({
       id: uuidv4(),
       ...newSkill
-    }));
+    });
     setNewSkill({
       name: '',
       proficiency: 'intermediate'
     });
   };
+  
 
   return (
     <div className="min-h-screen flex flex-col bg-space space-bg">
@@ -301,8 +310,8 @@ const Profile = () => {
                                   variant="ghost" 
                                   size="icon" 
                                   className="h-8 w-8 text-red-400 hover:text-red-300 hover:bg-red-900/20"
-                                  onClick={() => dispatch(removeEducation(edu.id))}
-                                >
+                                  onClick={() => removeEducation(edu.id)}
+                                  >
                                   <Trash className="h-4 w-4" />
                                 </Button>
                               </div>
@@ -425,8 +434,8 @@ const Profile = () => {
                                   variant="ghost" 
                                   size="icon" 
                                   className="h-8 w-8 text-red-400 hover:text-red-300 hover:bg-red-900/20"
-                                  onClick={() => dispatch(removeExperience(exp.id))}
-                                >
+                                  onClick={() => removeExperience(exp.id)}
+                                  >
                                   <Trash className="h-4 w-4" />
                                 </Button>
                               </div>
@@ -542,8 +551,8 @@ const Profile = () => {
                               <span className="ml-1 text-xs text-gray-400">({skill.proficiency})</span>
                             </span>
                             <button
-                              onClick={() => dispatch(removeSkill(skill.id))}
-                              className="text-gray-400 hover:text-red-400"
+onClick={() => removeSkill(skill.id)}
+className="text-gray-400 hover:text-red-400"
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <line x1="18" y1="6" x2="6" y2="18"></line>

@@ -11,7 +11,7 @@ import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { useToast } from '../hooks/use-toast';
-import { MessageCircle, HelpCircle, MessageSquare } from 'lucide-react';
+import { MessageSquare, HelpCircle } from 'lucide-react';
 
 const AskDoubts = () => {
   const { toast } = useToast();
@@ -23,18 +23,16 @@ const AskDoubts = () => {
   const [questionCategory, setQuestionCategory] = useState('');
   const [cartItemCount] = useState(0);
 
+  const categories = ['Web Development', 'Machine Learning', 'Database', 'Design', 'Mobile Development', 'DevOps', 'Computer Science'];
+
   const questions = [
     {
       id: '1',
       title: 'How do I implement Redux with React Hooks?',
-      content: 'I\'m trying to use Redux with React Hooks but I\'m not sure about the best practices. Should I use useReducer or the Redux toolkit?',
-      author: {
-        name: 'Emma Thompson',
-        avatar: 'https://i.pravatar.cc/100?img=1',
-        level: 'Advanced'
-      },
+      content: 'I\'m trying to use Redux with React Hooks but I\'m not sure about the best practices.',
+      author: { name: 'Emma Thompson', avatar: 'https://i.pravatar.cc/100?img=1', level: 'Advanced' },
       category: 'Web Development',
-      tags: ['React', 'Redux', 'Hooks'],
+      tags: ['React', 'Redux'],
       createdAt: '2025-05-01T10:24:00Z',
       replies: 3,
       views: 28,
@@ -43,111 +41,37 @@ const AskDoubts = () => {
     {
       id: '2',
       title: 'Understanding gradient descent in neural networks',
-      content: 'I\'m having trouble understanding how gradient descent works in neural networks. Can someone explain it in simple terms?',
-      author: {
-        name: 'James Wilson',
-        avatar: 'https://i.pravatar.cc/100?img=2',
-        level: 'Intermediate'
-      },
+      content: 'I\'m having trouble understanding how gradient descent works in neural networks.',
+      author: { name: 'James Wilson', avatar: 'https://i.pravatar.cc/100?img=2', level: 'Intermediate' },
       category: 'Machine Learning',
-      tags: ['Neural Networks', 'Gradient Descent', 'AI'],
+      tags: ['Neural Networks', 'Gradient Descent'],
       createdAt: '2025-05-01T15:42:00Z',
       replies: 5,
       views: 42,
       resolved: false
     },
-    {
-      id: '3',
-      title: 'Best practices for responsive web design in 2025',
-      content: 'What are the current best practices for responsive web design? Are media queries still relevant or should I be using something else?',
-      author: {
-        name: 'Olivia Martinez',
-        avatar: 'https://i.pravatar.cc/100?img=3',
-        level: 'Advanced'
-      },
-      category: 'Web Development',
-      tags: ['CSS', 'Responsive Design', 'Mobile'],
-      createdAt: '2025-05-01T18:15:00Z',
-      replies: 2,
-      views: 19,
-      resolved: false
-    },
-    {
-      id: '4',
-      title: 'How to optimize PostgreSQL queries for large datasets?',
-      content: 'I\'m working with a database that has millions of records and my queries are getting slow. What techniques can I use to optimize them?',
-      author: {
-        name: 'Daniel Johnson',
-        avatar: 'https://i.pravatar.cc/100?img=4',
-        level: 'Advanced'
-      },
-      category: 'Database',
-      tags: ['PostgreSQL', 'Performance', 'SQL'],
-      createdAt: '2025-05-02T09:30:00Z',
-      replies: 4,
-      views: 31,
-      resolved: true
-    },
-    {
-      id: '5',
-      title: 'Understanding closures in JavaScript',
-      content: 'Can someone explain how closures work in JavaScript? I keep seeing them used but I don\'t fully understand the concept.',
-      author: {
-        name: 'Sophia Garcia',
-        avatar: 'https://i.pravatar.cc/100?img=5',
-        level: 'Beginner'
-      },
-      category: 'Web Development',
-      tags: ['JavaScript', 'Functions', 'Fundamentals'],
-      createdAt: '2025-05-02T11:45:00Z',
-      replies: 7,
-      views: 53,
-      resolved: true
-    },
-    {
-      id: '6',
-      title: 'Best way to implement authentication in a React app',
-      content: 'I\'m building a React application and I need to implement authentication. What\'s the best approach for this in 2025?',
-      author: {
-        name: 'Michael Brown',
-        avatar: 'https://i.pravatar.cc/100?img=6',
-        level: 'Intermediate'
-      },
-      category: 'Web Development',
-      tags: ['React', 'Authentication', 'Security'],
-      createdAt: '2025-05-02T14:20:00Z',
-      replies: 2,
-      views: 26,
-      resolved: false
-    }
   ];
 
-  const categories = ['Web Development', 'Machine Learning', 'Database', 'Design', 'Mobile Development', 'DevOps', 'Computer Science'];
-  
-  const filteredQuestions = questions.filter(question => {
-    const matchesSearch = question.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          question.content.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = category === 'all' || question.category === category;
+  const filteredQuestions = questions.filter(q => {
+    const matchesSearch = q.title.toLowerCase().includes(searchQuery.toLowerCase()) || q.content.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = category === 'all' || q.category === category;
     return matchesSearch && matchesCategory;
   });
 
   const handleAskQuestion = (e) => {
     e.preventDefault();
-    
     if (!questionTitle.trim() || !questionContent.trim() || !questionCategory) {
       toast({
-        title: "Missing information",
-        description: "Please fill in all the required fields.",
+        title: "Missing fields",
+        description: "Please fill all fields.",
         variant: "destructive"
       });
       return;
     }
-    
     toast({
-      title: "Question submitted",
-      description: "Your question has been posted successfully!",
+      title: "Question Submitted",
+      description: "Your question has been posted!",
     });
-    
     setQuestionTitle('');
     setQuestionContent('');
     setQuestionCategory('');
@@ -156,8 +80,8 @@ const AskDoubts = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', { 
-      month: 'short', 
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
@@ -168,8 +92,112 @@ const AskDoubts = () => {
     <div className="min-h-screen flex flex-col bg-space space-bg">
       <ShootingStars />
       <Navbar cartItemCount={cartItemCount} />
-      {/* All other JSX remains unchanged */}
-      {/* ... You already pasted the full component above ... */}
+
+      <main className="container mx-auto px-4 py-10 text-white flex-grow">
+        <Tabs defaultValue="browse" value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-6">
+            <TabsTrigger value="browse">
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Browse Questions
+            </TabsTrigger>
+            <TabsTrigger value="ask">
+              <HelpCircle className="mr-2 h-4 w-4" />
+              Ask a Question
+            </TabsTrigger>
+          </TabsList>
+
+          {/* BROWSE QUESTIONS TAB */}
+          <TabsContent value="browse">
+            <div className="mb-6 flex flex-col sm:flex-row gap-4">
+              <Input
+                placeholder="Search questions..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="sm:flex-1 bg-space-light/50 border border-space-light text-white"
+              />
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger className="bg-space-light/50 border border-space-light text-white sm:w-64">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map(cat => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {filteredQuestions.length === 0 ? (
+              <p className="text-center text-gray-400 mt-10">No questions found.</p>
+            ) : (
+              <div className="space-y-4">
+                {filteredQuestions.map(q => (
+                  <Card key={q.id} className="bg-space-light/30 border border-space-light text-white">
+                    <CardHeader>
+                      <CardTitle className="text-lg font-semibold">{q.title}</CardTitle>
+                      <CardDescription className="text-gray-400">{q.category}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-300">{q.content}</p>
+                    </CardContent>
+                    <CardFooter className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <Avatar>
+                          <AvatarImage src={q.author.avatar} />
+                          <AvatarFallback>{q.author.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-medium">{q.author.name}</p>
+                          <p className="text-xs text-gray-400">{q.author.level}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-gray-400">
+                        <span>{formatDate(q.createdAt)}</span>
+                        <span>{q.views} views</span>
+                        <span>{q.replies} replies</span>
+                        {q.resolved && <Badge className="bg-green-600 text-white">Resolved</Badge>}
+                      </div>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* ASK QUESTION TAB */}
+          <TabsContent value="ask">
+            <form onSubmit={handleAskQuestion} className="space-y-6 max-w-2xl mx-auto mt-8">
+              <Input
+                placeholder="Question Title"
+                value={questionTitle}
+                onChange={(e) => setQuestionTitle(e.target.value)}
+                className="bg-space-light/50 border border-space-light text-white"
+              />
+              <Textarea
+                placeholder="Describe your question in detail..."
+                value={questionContent}
+                onChange={(e) => setQuestionContent(e.target.value)}
+                className="bg-space-light/50 border border-space-light text-white"
+              />
+              <Select value={questionCategory} onValueChange={setQuestionCategory}>
+                <SelectTrigger className="bg-space-light/50 border border-space-light text-white">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map(cat => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button type="submit" className="w-full bg-space-accent text-white hover:bg-space-accent/90">
+                Submit Question
+              </Button>
+            </form>
+          </TabsContent>
+        </Tabs>
+      </main>
+
       <Footer />
     </div>
   );

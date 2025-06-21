@@ -14,85 +14,19 @@ import CourseCard from '../components/CourseCard';
 import { useCartStore } from '../redux/slices/cartSlice';
 import { useCourseStore } from '../redux/slices/courseSlice';
 import { toast } from '../hooks/use-toast';
+import { useAuthStore } from '../redux/slices/authSlice';
 
-// Sample course data
-const sampleCourses = [
-  {
-    id: "1",
-    title: "Introduction to Astronomy: Exploring Our Universe",
-    instructor: "Dr. Sarah Thompson",
-    image: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fHNwYWNlfGVufDB8fDB8fHww",
-    price: 49.99,
-    rating: 4.7,
-    duration: "6 weeks",
-    level: "Beginner",
-    category: "Astronomy"
-  },
-  {
-    id: "2",
-    title: "Advanced Astrophysics: Black Holes & Dark Matter",
-    instructor: "Prof. Michael Chen",
-    image: "https://images.unsplash.com/photo-1501862700950-18382cd41497?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fHNwYWNlfGVufDB8fDB8fHww",
-    price: 79.99,
-    rating: 4.9,
-    duration: "10 weeks",
-    level: "Advanced",
-    category: "Astrophysics"
-  },
-  {
-    id: "3",
-    title: "Rocket Science Fundamentals",
-    instructor: "Dr. Robert Oppenheimer",
-    image: "https://images.unsplash.com/photo-1517976487492-5750f3195933?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjB8fHJvY2tldHxlbnwwfHwwfHx8MA%3D%3D",
-    price: 59.99,
-    rating: 4.5,
-    duration: "8 weeks",
-    level: "Intermediate",
-    category: "Engineering"
-  },
-  {
-    id: "4",
-    title: "Introduction to Space Law",
-    instructor: "Jennifer Lawrence, J.D.",
-    image: "https://images.unsplash.com/photo-1530893609608-32a9af3aa95c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fGxhd3xlbnwwfHwwfHx8MA%3D%3D",
-    price: 39.99,
-    rating: 4.2,
-    duration: "4 weeks",
-    level: "Beginner",
-    category: "Law"
-  },
-  {
-    id: "5",
-    title: "Space Medicine: Human Health in Microgravity",
-    instructor: "Dr. Elena Kuznetsova",
-    image: "https://plus.unsplash.com/premium_photo-1661769336629-bc18f1b51327?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fGRvY3RvcnxlbnwwfHwwfHx8MA%3D%3D",
-    price: 69.99,
-    rating: 4.8,
-    duration: "6 weeks",
-    level: "Advanced",
-    category: "Medicine"
-  },
-  {
-    id: "6",
-    title: "Space Station Design & Engineering",
-    instructor: "Prof. James Wong",
-    image: "https://images.unsplash.com/photo-1541185934-01b600ea069c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8c3BhY2UlMjBzdGF0aW9ufGVufDB8fDB8fHww",
-    price: 89.99,
-    rating: 4.6,
-    duration: "12 weeks",
-    level: "Advanced",
-    category: "Engineering"
-  }
-];
-
-const categories = ["All", "Astronomy", "Astrophysics", "Engineering", "Law", "Medicine"];
-const levels = ["Beginner", "Intermediate", "Advanced"];
 
 const Courses = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+const pageSize = 9; // Number of courses per page
+const { isAuthenticated } = useAuthStore();
+
+  const [categories, setCategories] = useState(["All"]);
+
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [selectedLevels, setSelectedLevels] = useState([]);
-  const [priceRange, setPriceRange] = useState([0, 100]);
+  const [priceRange, setPriceRange] = useState([0, 1000]);
   const [sortBy, setSortBy] = useState("popularity");
   const [filteredCourses, setFilteredCourses] = useState([]);
 
@@ -101,73 +35,137 @@ const Courses = () => {
   const setCourses = useCourseStore(state => state.setCourses);
   const items = useCartStore(state => state.items);
   const addToCart = useCartStore(state => state.addToCart);
-
   useEffect(() => {
-    setCourses(sampleCourses); // Load sample data
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('http://localhost:4000/api/v1/course/showAllCategories');
+        const json = await res.json();
+        if (json.success) {
+          const names = json.data.map((c) => c.name);
+          setCategories(["All", ...names]);
+        } else {
+          toast({ title: "Error", description: json.message });
+        }
+      } catch (err) {
+        toast({ title: "Error", description: "Failed to fetch categories" });
+      }
+    };
+  
+    fetchCategories();
+  }, []);
+  
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const res = await fetch('http://localhost:4000/api/v1/course/getAllCourses'); // Change base URL if needed
+        const json = await res.json();
+        if (json.success) {
+          setCourses(json.data); // Zustand setter
+        } else {
+          toast({ title: "Error", description: json.message });
+        }
+      } catch (error) {
+        console.error("Failed to fetch courses", error);
+        toast({ title: "Error", description: "Could not load courses" });
+      }
+    };
+  
+    fetchCourses(); 
   }, [setCourses]);
 
   useEffect(() => {
     let results = [...courses];
+    console.log(selectedCategory);
+    console.log(courses[0]);
+
 
     if (searchTerm) {
-      results = results.filter(course =>
-        course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.instructor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.category.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      results = results.filter(course => {
+        const instructorName = course.instructor
+          ? `${course.instructor.firstName ?? ""} ${course.instructor.lastName ?? ""}`.toLowerCase()
+          : "";
+    
+        const categoryName = course.category?.name?.toLowerCase() ?? "";
+    
+        return (
+          course.courseName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          instructorName.includes(searchTerm.toLowerCase()) ||
+          categoryName.includes(searchTerm.toLowerCase())
+        );
+      });
     }
-
+    
+    
     if (selectedCategory !== "All") {
-      results = results.filter(course => course.category === selectedCategory);
+      results = results.filter(course => course.category?.name === selectedCategory);
     }
-
-    if (selectedLevels.length > 0) {
-      results = results.filter(course => selectedLevels.includes(course.level));
-    }
+    
+    //if (selectedLevels.length > 0) {
+     // results = results.filter(course => selectedLevels.includes(course.level));
+   // }
 
     results = results.filter(course =>
       course.price >= priceRange[0] && course.price <= priceRange[1]
     );
 
-    switch (sortBy) {
-      case "price-low":
-        results.sort((a, b) => a.price - b.price);
-        break;
-      case "price-high":
-        results.sort((a, b) => b.price - a.price);
-        break;
-      case "rating":
-        results.sort((a, b) => b.rating - a.rating);
-        break;
-      default:
-        break;
-    }
+      switch (sortBy) {
+        case "price-low":
+          results.sort((a, b) => a.price - b.price);
+          break;
+        case "price-high":
+          results.sort((a, b) => b.price - a.price);
+          break;
+        case "rating":
+          results.sort((a, b) => Number(b.rating) - Number(a.rating)); // convert to number
+          break;
+        default:
+          break;
+      }
+      
     
     setFilteredCourses(results);
-  }, [searchTerm, selectedCategory, selectedLevels, priceRange, sortBy, courses]);
+    setCurrentPage(1); // Reset to page 1 on new filters
 
- 
+  }, [searchTerm, selectedCategory, priceRange, sortBy, courses]);
+
+  const paginatedCourses = filteredCourses.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   const handleAddToCart = (course) => {
-    const isAlreadyInCart = items.some(item => item.id === course.id);
-    if (isAlreadyInCart) {
-      toast({ title: "Already in cart", description: "This course is already in your cart" });
+    if (!isAuthenticated) {
+      toast({
+        title: "Login required",
+        description: "Please log in to add courses to your cart.",
+        variant: "destructive",
+      });
       return;
     }
-
+  
+    const isAlreadyInCart = items.some(item => item._id === course._id); // use _id not id if applicable
+    if (isAlreadyInCart) {
+      toast({
+        title: "Already in cart",
+        description: "This course is already in your cart.",
+      });
+      return;
+    }
+  
     addToCart(course);
-    toast({ title: "Course added", description: `${course.title} has been added to your cart` });
+    toast({
+      title: "Course added",
+      description: `${course.courseName} has been added to your cart.`,
+    });
   };
-
-  const handleLevelToggle = (level) => {
-    setSelectedLevels(prev =>
-      prev.includes(level) ? prev.filter(l => l !== level) : [...prev, level]
-    );
-  };
-
+  
+ 
+  console.log("Filtered:", filteredCourses);
+  console.log("Raw:", courses);
+  
   return (
+    
     <div className="min-h-screen flex flex-col bg-space space-bg">
       <ShootingStars />
       <Navbar cartItemCount={items.length} />
+      
       
       <main className="flex-grow container mx-auto py-12 px-4 md:px-6">
         <div className="mb-8">
@@ -198,45 +196,24 @@ const Courses = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-                
-                <div>
-                  <h4 className="text-gray-300 font-medium mb-2">Level</h4>
-                  <div className="space-y-2">
-                    {levels.map(level => (
-                      <div key={level} className="flex items-center space-x-2">
-                        <Checkbox 
-                          id={`level-${level}`} 
-                          checked={selectedLevels.includes(level)}
-                          onCheckedChange={() => handleLevelToggle(level)}
-                          className="border-space-accent text-space-accent"
-                        />
-                        <label 
-                          htmlFor={`level-${level}`}
-                          className="text-sm text-gray-300"
-                        >
-                          {level}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
+                </div>                
                 <div>
                   <div className="flex justify-between mb-2">
                     <h4 className="text-gray-300 font-medium">Price Range</h4>
                     <span className="text-sm text-gray-400">
-                      ${priceRange[0]} - ${priceRange[1]}
-                    </span>
+  ₹{priceRange[0]} - ₹{priceRange[1]}
+</span>
+
                   </div>
                   <Slider
-                    value={priceRange}
-                    min={0}
-                    max={100}
-                    step={5}
-                    onValueChange={setPriceRange}
-                    className="my-6"
-                  />
+  value={priceRange}
+  min={0}
+  max={1000}
+  step={50}
+  onValueChange={setPriceRange}
+  className="my-6"
+/>
+
                 </div>
                 
                 <Button 
@@ -244,8 +221,7 @@ const Courses = () => {
                   className="w-full border-space-light text-white hover:bg-space-light"
                   onClick={() => {
                     setSelectedCategory("All");
-                    setSelectedLevels([]);
-                    setPriceRange([0, 100]);
+                    setPriceRange([0, 1000]);
                     setSearchTerm("");
                   }}
                 >
@@ -289,9 +265,8 @@ const Courses = () => {
                 <Filter className="h-4 w-4 mr-2" /> Filters
               </Button>
             </div>
-            
             {/* Applied filters */}
-            {(selectedCategory !== "All" || selectedLevels.length > 0 || searchTerm) && (
+            {(selectedCategory !== "All"|| searchTerm) && (
               <div className="flex flex-wrap gap-2 mb-6">
                 {selectedCategory !== "All" && (
                   <Badge className="bg-space-accent/20 text-space-accent hover:bg-space-accent/30">
@@ -303,23 +278,7 @@ const Courses = () => {
                       ×
                     </button>
                   </Badge>
-                )}
-                
-                {selectedLevels.map(level => (
-                  <Badge 
-                    key={level} 
-                    className="bg-space-accent/20 text-space-accent hover:bg-space-accent/30"
-                  >
-                    {level}
-                    <button 
-                      className="ml-2 hover:text-white"
-                      onClick={() => handleLevelToggle(level)}
-                    >
-                      ×
-                    </button>
-                  </Badge>
-                ))}
-                
+                )}               
                 {searchTerm && (
                   <Badge className="bg-space-accent/20 text-space-accent hover:bg-space-accent/30">
                     Search: {searchTerm}
@@ -356,9 +315,9 @@ const Courses = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredCourses.map(course => (
+{paginatedCourses.map(course => (
                       <CourseCard 
-                        key={course.id} 
+                        key={course._id} 
                         course={course} 
                         onAddToCart={handleAddToCart} 
                       />
@@ -374,7 +333,7 @@ const Courses = () => {
                     .filter(course => course.rating >= 4.5)
                     .map(course => (
                       <CourseCard 
-                        key={course.id} 
+                        key={course._id} 
                         course={course} 
                         onAddToCart={handleAddToCart} 
                       />
@@ -389,7 +348,7 @@ const Courses = () => {
                     .slice(0, 3)
                     .map(course => (
                       <CourseCard 
-                        key={course.id} 
+                        key={course._id} 
                         course={course} 
                         onAddToCart={handleAddToCart} 
                       />
@@ -399,22 +358,22 @@ const Courses = () => {
             </Tabs>
             
             {/* Pagination placeholder */}
-            <div className="flex justify-center mt-8">
-              <div className="flex space-x-1">
-                <Button variant="outline" size="icon" className="w-10 h-10 border-space-light text-white">
-                  1
-                </Button>
-                <Button variant="outline" size="icon" className="w-10 h-10 border-space-light text-white">
-                  2
-                </Button>
-                <Button variant="outline" size="icon" className="w-10 h-10 border-space-light text-white">
-                  3
-                </Button>
-                <Button variant="outline" size="icon" disabled className="w-10 h-10 border-space-light text-white">
-                  ...
-                </Button>
-              </div>
-            </div>
+            {filteredCourses.length > pageSize && (
+  <div className="flex justify-center mt-8 space-x-1">
+    {[...Array(Math.ceil(filteredCourses.length / pageSize))].map((_, i) => (
+      <Button
+        key={i}
+        onClick={() => setCurrentPage(i + 1)}
+        variant="outline"
+        size="icon"
+        className={`w-10 h-10 border-space-light text-white ${currentPage === i + 1 ? 'bg-space-accent' : ''}`}
+      >
+        {i + 1}
+      </Button>
+    ))}
+  </div>
+)}
+
           </div>
         </div>
       </main>

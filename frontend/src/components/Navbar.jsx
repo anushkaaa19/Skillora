@@ -50,9 +50,7 @@ const Navbar = () => {
               <Link to="/courses" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
                 Courses
               </Link>
-              <Link to="/study-room" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                Study Room
-              </Link>
+           
               <Link to="/leaderboard" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
                 Leaderboard
               </Link>

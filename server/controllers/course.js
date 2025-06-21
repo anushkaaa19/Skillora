@@ -105,118 +105,137 @@ exports.createCourse = async (req, res) => {
 }
 
 
-// ================ show all courses ================
+//// ================ show all courses ================
+// ================ show all courses with rating ================
 exports.getAllCourses = async (req, res) => {
     try {
-        const allCourses = await Course.find({},
-            {
-                courseName: true, courseDescription: true, price: true, thumbnail: true, instructor: true,
-                ratingAndReviews: true, studentsEnrolled: true
-            })
-            .populate({
-                path: 'instructor',
-                select: 'firstName lastName email image'
-            })
-            .exec();
-
-        return res.status(200).json({
-            success: true,
-            data: allCourses,
-            message: 'Data for all courses fetched successfully'
-        });
-    }
-
-    catch (error) {
-        console.log('Error while fetching data of all courses');
-        console.log(error);
-        res.status(500).json({
-            success: false,
-            error: error.message,
-            message: 'Error while fetching data of all courses'
+      const allCourses = await Course.find(
+        {},
+        {
+          courseName: true,
+          courseDescription: true,
+          price: true,
+          thumbnail: true,
+          instructor: true,
+          ratingAndReviews: true,
+          studentsEnrolled: true,
+          category: true,
+        }
+      )
+        .populate({
+          path: "instructor",
+          select: "firstName lastName email image",
         })
+        .populate({
+          path: "category",
+          select: "name",
+        })
+        .populate({
+          path: "ratingAndReviews",
+          select: "rating", // Only need rating
+        });
+  
+      // Calculate average rating per course
+      const coursesWithRatings = allCourses.map((course) => {
+        const reviews = course.ratingAndReviews;
+        const avgRating =
+          reviews.length > 0
+            ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+            : 0;
+  
+        return {
+          ...course.toObject(),
+          rating: Number(avgRating.toFixed(1)),
+        };
+      });
+  
+      return res.status(200).json({
+        success: true,
+        data: coursesWithRatings,
+        message: "Data for all courses fetched successfully",
+      });
+    } catch (error) {
+      console.log("Error while fetching data of all courses");
+      console.log(error);
+      res.status(500).json({
+        success: false,
+        error: error.message,
+        message: "Error while fetching data of all courses",
+      });
     }
-}
-
-
-
+  };
 // ================ Get Course Details ================
 exports.getCourseDetails = async (req, res) => {
     try {
-        // get course ID
-        const { courseId } = req.body;
-
-        // find course details
-        const courseDetails = await Course.findOne({
-            _id: courseId,
+      // get course ID
+      const { courseId } = req.body;
+  
+      // find course details
+      const courseDetails = await Course.findOne({ _id: courseId })
+        .populate({
+          path: "instructor",
+          populate: {
+            path: "additionalDetails",
+          },
         })
-            .populate({
-                path: "instructor",
-                populate: {
-                    path: "additionalDetails",
-                },
-            })
-            .populate("category")
-            .populate("ratingAndReviews")
-
-            .populate({
-                path: "courseContent",
-                populate: {
-                    path: "subSection",
-                    select: "-videoUrl",
-                },
-            })
-            .exec()
-
-
-        //validation
-        if (!courseDetails) {
-            return res.status(400).json({
-                success: false,
-                message: `Could not find the course with ${courseId}`,
-            });
-        }
-
-        // if (courseDetails.status === "Draft") {
-        //   return res.status(403).json({
-        //     success: false,
-        //     message: `Accessing a draft course is forbidden`,
-        //   });
-        // }
-
-        // console.log('courseDetails -> ', courseDetails)
-        let totalDurationInSeconds = 0
-        courseDetails.courseContent.forEach((content) => {
-            content.subSection.forEach((subSection) => {
-                const timeDurationInSeconds = parseInt(subSection.timeDuration)
-                totalDurationInSeconds += timeDurationInSeconds
-            })
+        .populate("category")
+        .populate("ratingAndReviews")
+        .populate({
+          path: "courseContent",
+          populate: {
+            path: "subSection",
+            select: "-videoUrl",
+          },
         })
-
-        const totalDuration = convertSecondsToDuration(totalDurationInSeconds)
-
-        //return response
-        return res.status(200).json({
-            success: true,
-            data: {
-                courseDetails,
-                totalDuration,
-            },
-            message: 'Fetched course data successfully'
-        })
-    }
-
-    catch (error) {
-        console.log('Error while fetching course details');
-        console.log(error);
-        return res.status(500).json({
-            success: false,
-            error: error.message,
-            message: 'Error while fetching course details',
+        .exec();
+  
+      // validation
+      if (!courseDetails) {
+        return res.status(400).json({
+          success: false,
+          message: `Could not find the course with ID: ${courseId}`,
         });
+      }
+  
+      // Calculate total duration
+      let totalDurationInSeconds = 0;
+      courseDetails.courseContent.forEach((content) => {
+        content.subSection.forEach((subSection) => {
+          const timeDurationInSeconds = parseInt(subSection.timeDuration);
+          totalDurationInSeconds += timeDurationInSeconds;
+        });
+      });
+  
+      const totalDuration = convertSecondsToDuration(totalDurationInSeconds);
+  
+      // Calculate average rating
+      const reviews = courseDetails.ratingAndReviews;
+      const avgRating =
+        reviews.length > 0
+          ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+          : 0;
+  
+      // Return response
+      return res.status(200).json({
+        success: true,
+        message: "Fetched course data successfully",
+        data: {
+          courseDetails,
+          totalDuration,
+          avgRating: Number(avgRating.toFixed(1)),
+        },
+      });
+    } catch (error) {
+      console.log("Error while fetching course details");
+      console.error(error);
+      return res.status(500).json({
+        success: false,
+        message: "Error while fetching course details",
+        error: error.message,
+      });
     }
-}
-
-
+  };
+  
 // ================ Get Full Course Details ================
 exports.getFullCourseDetails = async (req, res) => {
     try {

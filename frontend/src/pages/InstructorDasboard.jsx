@@ -4,8 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Progress } from '../components/ui/progress';
-import { Separator } from '../components/ui/separator';
-import { PlusCircle, Users, BookOpen, DollarSign, TrendingUp, Calendar, BarChart, DownloadCloud } from 'lucide-react';
+import { PlusCircle, Users, BookOpen, DollarSign, TrendingUp } from 'lucide-react';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -15,13 +14,14 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip
+  Tooltip,
 } from 'recharts';
 import ShootingStars from '../components/ShootingStars';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { useAppSelector } from '../redux/hooks';
 
+import { useAuthStore } from '../redux/slices/authSlice';
+import { useCourseStore } from '../redux/slices/courseSlice';
 // Sample data for charts
 const revenueData = [
   { name: 'Jan', revenue: 2400 },
@@ -40,24 +40,21 @@ const studentsData = [
   { name: 'Space Law', students: 42 },
 ];
 
+
 const InstructorDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
-  const { user } = useAppSelector(state => state.auth);
-  const { courses } = useAppSelector(state => state.courses);
-  
-  // Get instructor courses (in a real app, you'd filter by instructor ID)
+  const user = useAuthStore((state) => state.user);
+  const courses = useCourseStore((state) => state.courses);
+
   const instructorCourses = courses.slice(0, 4);
-  
-  // Calculate some stats
-  const totalStudents = 312; // This would come from the backend
-  const totalRevenue = 9845.75; // This would come from the backend
+  const totalStudents = 312;
+  const totalRevenue = 9845.75;
   const totalCourses = instructorCourses.length;
 
   return (
     <div className="min-h-screen flex flex-col bg-space space-bg">
       <ShootingStars />
       <Navbar cartItemCount={0} />
-      
       <main className="flex-grow container mx-auto py-12 px-4 md:px-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
@@ -66,7 +63,6 @@ const InstructorDashboard = () => {
               Welcome back, {user?.name || 'Instructor'}! Manage your courses and analyze your performance.
             </p>
           </div>
-          
           <div className="mt-4 md:mt-0">
             <Link to="/instructor/courses/create">
               <Button className="bg-space-accent hover:bg-space-secondary text-white">
