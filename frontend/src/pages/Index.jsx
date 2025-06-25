@@ -66,7 +66,7 @@ const Index = () => {
         const json = await res.json();
         if (json.success) {
           const topRated = json.data
-            .filter(course => course.rating >= 4.5)
+            .filter(course => course.rating >= 2)
             .slice(0, 4);
           setFeaturedCourses(topRated);
         } else {

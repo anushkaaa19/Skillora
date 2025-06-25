@@ -25,8 +25,10 @@ exports.googleLogin = async (req, res) => {
     }
 
     // Check if user exists
-    let user = await User.findOne({ email }).populate("additionalDetails");
-    console.log(user ? "👤 User already exists" : "🆕 Creating new user");
+    let user = await User.findOne({ email })
+    .populate("additionalDetails")
+    .populate("courses", "courseName");
+      console.log(user ? "👤 User already exists" : "🆕 Creating new user");
 
     if (!user) {
       const [firstName, ...rest] = name?.split(" ") || [];

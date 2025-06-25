@@ -30,7 +30,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     loginStart();
-
+  
     try {
       const res = await fetch("http://localhost:4000/api/v1/auth/login", {
         method: "POST",
@@ -40,16 +40,18 @@ const Login = () => {
         },
         body: JSON.stringify({ email, password }),
       });
-
+  
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
-
-      loginSuccess(data.user);
+  
+      localStorage.setItem("token", data.token); // ✅
+      loginSuccess({ ...data.user, token: data.token }); // ✅
+  
       toast({
         title: "Login successful",
         description: `Welcome ${data.user.firstName || data.user.name}`,
       });
-
+  
       navigate(data.user.accountType === "Instructor" ? "/instructor/dashboard" : "/student/dashboard");
     } catch (err) {
       toast({
@@ -60,6 +62,7 @@ const Login = () => {
       loginFail();
     }
   };
+  
 
   const handleGoogleSignIn = async () => {
     loginStart();
@@ -95,9 +98,12 @@ const Login = () => {
       }
   
       console.log("✅ Backend login success, user:", data.user);
-  
+      localStorage.setItem("token", data.token);
+console.log("📦 Saved token:", data.token);
+
+
       loginSuccess(data.user);
-  
+
       toast({
         title: "Google login successful",
         description: `Welcome ${data.user.firstName || data.user.name}`,

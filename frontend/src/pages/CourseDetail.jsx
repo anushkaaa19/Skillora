@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useCartStore } from '../redux/slices/cartSlice';
 import { toast } from '../hooks/use-toast';
+import ReviewList from "../components/ReviewList";
 
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -204,6 +205,8 @@ const CourseDetail = () => {
             </Card>
           </TabsContent>
         </Tabs>
+        <ReviewList courseId={courseId} />
+
       </main>
       <Footer />
     </div>

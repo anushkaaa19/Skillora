@@ -6,9 +6,13 @@ import { Link } from 'react-router-dom';
 
 const FeaturedCourses = ({ courses = [], onAddToCart }) => {
   // Optional: Pick top 4 rated courses
+
+
   const topCourses = [...courses]
-    .filter(course => Number(course.rating) >= 4.5)
+    .filter(course => Number(course.rating) >= 2)
     .slice(0, 4);
+    console.log("📦 All received courses:", courses);
+    console.log("✅ Filtered top courses (rating >= 2):", topCourses);
 
   return (
     <div className="py-20 container mx-auto px-4">

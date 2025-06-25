@@ -139,15 +139,21 @@ exports.getAllCourses = async (req, res) => {
       const coursesWithRatings = allCourses.map((course) => {
         const reviews = course.ratingAndReviews;
         const avgRating =
-          reviews.length > 0
-            ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-            : 0;
+        reviews.length > 0
+          ? reviews.reduce((sum, r) => sum + Number(r.rating), 0) / reviews.length
+          : 0;
+      
   
         return {
           ...course.toObject(),
           rating: Number(avgRating.toFixed(1)),
         };
       });
+      console.log("🎯 Total courses in DB:", allCourses.length);
+console.log("🎯 Courses with ratings computed:", coursesWithRatings.length);
+console.log("📊 Ratings of each course:");
+coursesWithRatings.forEach(c => console.log(`${c.courseName}: ${c.rating}`));
+
   
       return res.status(200).json({
         success: true,

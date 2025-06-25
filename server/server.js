@@ -6,6 +6,8 @@ const fileUpload = require('express-fileupload');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 require('dotenv').config();
+const questionRoutes = require("./routes/questionRoutes");
+
 
 // connection to DB and cloudinary
 const { connectDB } = require('./config/database');
@@ -46,6 +48,7 @@ app.listen(PORT, () => {
 // connections
 connectDB();
 cloudinaryConnect();
+app.use("/api/v1/questions", questionRoutes);
 
 app.use('/api/v1/auth', userRoutes);
 app.use('/api/v1/certificate',certificateRoutes);

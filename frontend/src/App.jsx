@@ -3,7 +3,6 @@ import { Toaster as Sonner } from "../src/components/ui/sonner";
 import { TooltipProvider } from "../src/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route } from "react-router-dom";
-
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -24,22 +23,16 @@ import ResetPassword from './pages/ResetPassword';
 import CheckEmailPage from "./pages/CheckEmail";
 import CourseBuilder from './pages/CourseBuilder'; // ✅ import your component
 import CoursePlayer from './pages/CoursePlayer';
-
-
 import Profile from "./pages/Profile";
-
 const queryClient = new QueryClient();
-
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        
           <Routes>
           <Route path="/check-email" element={<CheckEmailPage />} />
-
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
@@ -47,32 +40,25 @@ function App() {
             <Route path="/leaderboard" element={
   <ProtectedRoute><Leaderboard /></ProtectedRoute>
 } />
-<Route path="/doubts" element={
-  <ProtectedRoute><AskDoubts /></ProtectedRoute>
-} />
 <Route path="/cart" element={
   <ProtectedRoute><Cart /></ProtectedRoute>
 } />
 <Route path="/courses/:courseId" element={<CourseDetail />} />
-
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/course/:courseId" element={<CoursePlayer />} />
-
 <Route path="/forgot-password" element={<ForgotPassword />} />
 <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
             <Route path="/instructor/courses/create" element={<CreateCourse />} />
             <Route path="/instructor/course-builder/:courseId" element={<CourseBuilder />} /> {/* ✅ this is required */}
-
             <Route path="/student/dashboard" element={<StudentDashboard />} />
             <Route path="/certificate/:courseId" element={<Certificate />} />
             <Route path="*" element={<NotFound />} />
-          </Routes>
-        
+            <Route path="/doubts" element={<AskDoubts />} />
+          </Routes>       
       </TooltipProvider>
     </QueryClientProvider>
   );
 }
-
 export default App;

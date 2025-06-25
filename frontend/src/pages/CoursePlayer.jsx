@@ -3,6 +3,7 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
 import { Button } from "../components/ui/button";
+import ReviewSection from '../components/ReviewSection';
 
 const CoursePlayer = () => {
   const { courseId } = useParams();
@@ -128,6 +129,8 @@ const CoursePlayer = () => {
           <div className="text-gray-400">📽 Select a video to start learning</div>
         )}
       </div>
+      <ReviewSection courseId={courseId} />
+
     </div>
   );
 };
