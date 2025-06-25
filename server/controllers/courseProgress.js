@@ -2,6 +2,7 @@ const mongoose = require("mongoose")
 const Section = require("../models/section")
 const SubSection = require("../models/subSection")
 const CourseProgress = require("../models/courseProgress")
+const User =require("../models/user")
 
 
 // ================ update Course Progress ================
@@ -51,54 +52,62 @@ exports.updateCourseProgress = async (req, res) => {
 
 
 
-// ================ get Progress Percentage ================
-// exports.getProgressPercentage = async (req, res) => {
-//   const { courseId } = req.body
-//   const userId = req.user.id
+// GET progress for all enrolled courses
+exports.getAllCourseProgress = async (req, res) => {
+  const userId = req.user.id;
 
-//   if (!courseId) {
-//     return res.status(400).json({ error: "Course ID not provided." })
-//   }
+  try {
+    const user = await User.findById(userId)
+      .populate({
+        path: 'courseProgress',
+        populate: {
+          path: 'courseID',
+          populate: {
+            path: 'courseContent',
+            populate: {
+              path: 'subSection',
+            },
+          },
+        },
+      });
 
-//   try {
-//     // Find the course progress document for the user and course
-//     let courseProgress = await CourseProgress.findOne({
-//       courseID: courseId,
-//       userId: userId,
-//     })
-//       .populate({
-//         path: "courseID",
-//         populate: {
-//           path: "courseContent",
-//         },
-//       })
-//       .exec()
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
 
-//     if (!courseProgress) {
-//       return res
-//         .status(400)
-//         .json({ error: "Can not find Course Progress with these IDs." })
-//     }
-//     console.log(courseProgress, userId)
-//     let lectures = 0
-//     courseProgress.courseID.courseContent?.forEach((sec) => {
-//       lectures += sec.subSection.length || 0
-//     })
+    const result = {};
 
-//     let progressPercentage =
-//       (courseProgress.completedVideos.length / lectures) * 100
+    for (const progress of user.courseProgress) {
+      const course = progress.courseID;
 
-//     // To make it up to 2 decimal point
-//     const multiplier = Math.pow(10, 2)
-//     progressPercentage =
-//       Math.round(progressPercentage * multiplier) / multiplier
+      // 🟨 Add these logs:
+      console.log("Course:", course.courseName);
+      console.log("Total CourseContent:", course.courseContent?.length);
+      console.log("Subsections in each section:");
+      course.courseContent?.forEach((sec, i) => {
+        console.log(`  Section ${i + 1}: ${sec.subSection?.length || 0} subsections`);
+      });
 
-//     return res.status(200).json({
-//       data: progressPercentage,
-//       message: "Succesfully fetched Course progress",
-//     })
-//   } catch (error) {
-//     console.error(error)
-//     return res.status(500).json({ error: "Internal server error" })
-//   }
-// }
+      const totalLectures = course.courseContent.reduce((acc, sec) => {
+        return acc + (sec.subSection?.length || 0);
+      }, 0);
+
+      const completed = progress.completedVideos.length;
+
+      console.log("Total Lectures:", totalLectures);
+      console.log("Completed:", completed);
+
+      const percentage = totalLectures === 0 ? 0 : Math.round((completed / totalLectures) * 100);
+      result[course._id] = percentage;
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: result,
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};

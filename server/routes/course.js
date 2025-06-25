@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 // Import required controllers
-
+const {getLearningHours}=require('../controllers/subSection')
 // course controllers 
 const {
     createCourse,
@@ -14,7 +14,7 @@ const {
     getInstructorCourses,
 
 } = require('../controllers/course')
-
+const {markVideoCompleted}=require('../controllers/course')
 const { updateCourseProgress } = require('../controllers/courseProgress')
 
 // categories Controllers
@@ -40,6 +40,8 @@ const {
     updateSubSection,
     deleteSubSection
 } = require('../controllers/subSection');
+const { getAllCourseProgress } = require('../controllers/courseProgress');
+
 
 
 // rating controllers
@@ -60,6 +62,8 @@ const { auth, isAdmin, isInstructor, isStudent } = require('../middleware/auth')
 // Courses can Only be Created by Instructors
 
 router.post('/createCourse', auth, isInstructor, createCourse);
+router.post('/mark-completed', auth, isInstructor, markVideoCompleted);
+router.get('/dashboard/learning-hours', auth, getLearningHours);
 
 //Add a Section to a Course
 router.post('/addSection', auth, isInstructor, createSection);
@@ -85,6 +89,7 @@ router.post('/getFullCourseDetails', auth, getFullCourseDetails);
 // Get all Courses Under a Specific Instructor
 router.get("/getInstructorCourses", auth, isInstructor, getInstructorCourses)
 
+router.get('/dashboard/progress', auth, getAllCourseProgress);
 
 // Edit Course routes
 router.post("/editCourse", auth, isInstructor, editCourse)
@@ -102,8 +107,8 @@ router.post("/updateCourseProgress", auth, isStudent, updateCourseProgress)
 // ********************************************************************************************************
 // Category can Only be Created by Admin
 
-router.post('/createCategory', auth, isAdmin, createCategory);
-router.delete('/deleteCategory', auth, isAdmin, deleteCategory);
+router.post('/createCategory', auth, isInstructor, createCategory);
+router.delete('/deleteCategory', auth, isInstructor, deleteCategory);
 router.get('/showAllCategories', showAllCategories);
 router.post("/getCategoryPageDetails", getCategoryPageDetails)
 

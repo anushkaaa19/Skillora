@@ -235,6 +235,30 @@ exports.getCourseDetails = async (req, res) => {
       });
     }
   };
+  // courseController.js
+exports.markVideoCompleted = async (req, res) => {
+    try {
+      const { videoId, courseId } = req.body;
+      const userId = req.user.id;
+  
+      let courseProgress = await CourseProgress.findOne({ courseID: courseId, userId });
+  
+      if (!courseProgress) {
+        courseProgress = await CourseProgress.create({
+          courseID: courseId,
+          userId,
+          completedVideos: [videoId],
+        });
+      } else if (!courseProgress.completedVideos.includes(videoId)) {
+        courseProgress.completedVideos.push(videoId);
+        await courseProgress.save();
+      }
+  
+      res.status(200).json({ success: true, message: "Video marked as completed" });
+    } catch (err) {
+      res.status(500).json({ success: false, message: "Failed to update progress" });
+    }
+  };
   
 // ================ Get Full Course Details ================
 exports.getFullCourseDetails = async (req, res) => {
@@ -287,10 +311,13 @@ exports.getFullCourseDetails = async (req, res) => {
         let totalDurationInSeconds = 0
         courseDetails.courseContent.forEach((content) => {
             content.subSection.forEach((subSection) => {
-                const timeDurationInSeconds = parseInt(subSection.timeDuration)
-                totalDurationInSeconds += timeDurationInSeconds
-            })
+                const timeStr = subSection.timeDuration || "0";
+                const seconds = isNaN(parseInt(timeStr)) ? 0 : parseInt(timeStr);
+                totalDurationInSeconds += seconds;
+              });
+              
         })
+        console.log(JSON.stringify(courseDetails.courseContent, null, 2));
 
         const totalDuration = convertSecondsToDuration(totalDurationInSeconds)
 

@@ -1,9 +1,55 @@
 const Section = require('../models/section');
 const SubSection = require('../models/subSection');
 const { uploadImageToCloudinary } = require('../utils/imageUploader');
+const CourseProgress = require('../models/courseProgress');
 
 
-
+exports.getLearningHours = async (req, res) => {
+    try {
+      const userId = req.user.id;
+      console.log("➡️ Fetching progress for user:", userId);
+  
+      const allProgress = await CourseProgress.find({ userId });
+      console.log("📘 CourseProgress records:", JSON.stringify(allProgress, null, 2));
+  
+      const allCompletedVideoIds = allProgress.flatMap(cp => cp.completedVideos);
+      console.log("🎥 All completed video IDs:", allCompletedVideoIds);
+  
+      if (allCompletedVideoIds.length === 0) {
+        console.log("⚠️ No completed videos found.");
+        return res.status(200).json({ success: true, data: 0 });
+      }
+  
+      const subSections = await SubSection.find({
+        _id: { $in: allCompletedVideoIds },
+      });
+      console.log("📦 Fetched SubSections:", JSON.stringify(subSections, null, 2));
+  
+      let totalMinutes = 0;
+  
+      for (const sub of subSections) {
+        const raw = sub.timeDuration;
+        const minutes = parseFloat(raw);
+  
+        console.log(`🧮 SubSection "${sub.title}" - timeDuration: "${raw}" -> parsed: ${minutes}`);
+  
+        if (!isNaN(minutes)) {
+          totalMinutes += minutes;
+        } else {
+          console.log(`❌ Failed to parse timeDuration for SubSection ID: ${sub._id}`);
+        }
+      }
+  
+      const totalHours = (totalMinutes / 60).toFixed(2);
+      console.log(`✅ Total minutes: ${totalMinutes}, Total hours: ${totalHours}`);
+  
+      return res.status(200).json({ success: true, data: Number(totalHours) });
+  
+    } catch (err) {
+      console.error("❌ Error calculating learning hours:", err);
+      return res.status(500).json({ success: false, message: "Server error" });
+    }
+  };
 // ================ create SubSection ================
 exports.createSubSection = async (req, res) => {
     try {

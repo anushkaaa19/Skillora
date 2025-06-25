@@ -16,6 +16,7 @@ const userRoutes = require('./routes/user');
 const profileRoutes = require('./routes/profile');
 const paymentRoutes = require('./routes/payments');
 const courseRoutes = require('./routes/course');
+const certificateRoutes=require ('./routes/certificate');
 
 
 // middleware 
@@ -47,6 +48,7 @@ connectDB();
 cloudinaryConnect();
 
 app.use('/api/v1/auth', userRoutes);
+app.use('/api/v1/certificate',certificateRoutes);
 app.use('/api/v1/profile', profileRoutes);
 app.use('/api/v1/payment', paymentRoutes);
 app.use('/api/v1/course', courseRoutes);

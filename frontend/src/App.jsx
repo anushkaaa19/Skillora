@@ -14,7 +14,7 @@ import NotFound from "./pages/NotFound";
 import Cart from "./pages/Cart";
 import InstructorDashboard from "./pages/InstructorDasboard";
 import StudentDashboard from "./pages/StudentDashboard";
-import CourseCreator from "./pages/CourseCreator";
+import CreateCourse from "./pages/CreateCourse";
 import Certificate from "./pages/Certificate";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from './components/ProtectedRoute'; // add this at top
@@ -22,6 +22,8 @@ import CourseDetail from './pages/CourseDetail'; // or wherever it's located
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import CheckEmailPage from "./pages/CheckEmail";
+import CourseBuilder from './pages/CourseBuilder'; // ✅ import your component
+import CoursePlayer from './pages/CoursePlayer';
 
 
 import Profile from "./pages/Profile";
@@ -54,12 +56,15 @@ function App() {
 <Route path="/courses/:courseId" element={<CourseDetail />} />
 
             <Route path="/dashboard" element={<Dashboard />} />
-            
+            <Route path="/dashboard/course/:courseId" element={<CoursePlayer />} />
+
 <Route path="/forgot-password" element={<ForgotPassword />} />
 <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
-            <Route path="/instructor/courses/create" element={<CourseCreator />} />
+            <Route path="/instructor/courses/create" element={<CreateCourse />} />
+            <Route path="/instructor/course-builder/:courseId" element={<CourseBuilder />} /> {/* ✅ this is required */}
+
             <Route path="/student/dashboard" element={<StudentDashboard />} />
             <Route path="/certificate/:courseId" element={<Certificate />} />
             <Route path="*" element={<NotFound />} />

@@ -5,62 +5,52 @@ require('dotenv').config();
 
 
 // ================ AUTH ================
-// user Authentication by checking token validating
 exports.auth = (req, res, next) => {
     try {
-        // extract token by anyone from this 3 ways
-        const token = req.body?.token || req.cookies.token || req.header('Authorization').replace('Bearer ', '');
-
-        // if token is missing
-        if (!token) {
-            return res.status(401).json({
-                success: false,
-                message: 'Token is Missing'
-            });
-        }
-
-        // console.log('Token ==> ', token);
-        // console.log('From body -> ', req.body?.token);
-        // console.log('from cookies -> ', req.cookies?.token);
-        // console.log('from headers -> ', req.header('Authorization')?.replace('Bearer ', ''));
-
-        // verify token
-        try {
-            const decode = jwt.verify(token, process.env.JWT_SECRET);
-            // console.log('verified decode token => ', decode);
-            
-            // *********** example from console ***********
-            // verified decode token =>  {
-            //     email: 'buydavumli@biyac.com',
-            //     id: '650d6ae2914831142c702e4c',
-            //     accountType: 'Student',
-            //     iat: 1699452446,
-            //     exp: 1699538846
-            //   }
-            req.user = decode;
-        }
-        catch (error) {
-            console.log('Error while decoding token');
-            console.log(error);
-            return res.status(401).json({
-                success: false,
-                error: error.message,
-                messgae: 'Error while decoding token'
-            })
-        }
-        // go to next middleware
-        next();
+      const bodyToken = req.body?.token;
+      const cookieToken = req.cookies?.token;
+      const authHeader = req.header('Authorization');
+  
+      console.log("🍪 [Backend] Cookie Token:", cookieToken);
+      console.log("📝 [Backend] Body Token:", bodyToken);
+      console.log("🔐 [Backend] Authorization Header:", authHeader);
+  
+      const token = authHeader?.replace('Bearer ', '') || bodyToken || cookieToken;
+  
+      console.log("✅ [Backend] Final token being used:", token);
+  
+      if (!token) {
+        console.warn("❌ [Backend] No token provided");
+        return res.status(401).json({
+          success: false,
+          message: 'Token is Missing',
+        });
+      }
+  
+      // Verify token
+      try {
+        const decode = jwt.verify(token, process.env.JWT_SECRET);
+        console.log("✅ [Backend] Token verified:", decode);
+        req.user = decode;
+      } catch (error) {
+        console.error("❌ [Backend] Error decoding token:", error.message);
+        return res.status(401).json({
+          success: false,
+          error: error.message,
+          message: 'Error while decoding token',
+        });
+      }
+  
+      next();
+    } catch (error) {
+      console.error("🔥 [Backend] Error while token validating:", error.message);
+      return res.status(500).json({
+        success: false,
+        message: 'Error while token validating',
+      });
     }
-    catch (error) {
-        console.log('Error while token validating');
-        console.log(error);
-        return res.status(500).json({
-            success: false,
-            messgae: 'Error while token validating'
-        })
-    }
-}
-
+  };
+  
 
 
 
@@ -69,10 +59,10 @@ exports.auth = (req, res, next) => {
 exports.isStudent = (req, res, next) => {
     try {
         // console.log('User data -> ', req.user)
-        if (req.user?.accountType != 'Student') {
+        if (req.user?.accountType?.toLowerCase() !== 'student'){
             return res.status(401).json({
                 success: false,
-                messgae: 'This Page is protected only for student'
+                message: 'This Page is protected only for student'
             })
         }
         // go to next middleware
@@ -84,7 +74,7 @@ exports.isStudent = (req, res, next) => {
         return res.status(500).json({
             success: false,
             error: error.message,
-            messgae: 'Error while cheching user validity with student accountType'
+            message: 'Error while cheching user validity with student accountType'
         })
     }
 }
@@ -97,7 +87,7 @@ exports.isInstructor = (req, res, next) => {
         if (req.user?.accountType != 'Instructor') {
             return res.status(401).json({
                 success: false,
-                messgae: 'This Page is protected only for Instructor'
+                message: 'This Page is protected only for Instructor'
             })
         }
         // go to next middleware
@@ -109,7 +99,7 @@ exports.isInstructor = (req, res, next) => {
         return res.status(500).json({
             success: false,
             error: error.message,
-            messgae: 'Error while cheching user validity with Instructor accountType'
+            message: 'Error while cheching user validity with Instructor accountType'
         })
     }
 }
@@ -122,7 +112,7 @@ exports.isAdmin = (req, res, next) => {
         if (req.user.accountType != 'Admin') {
             return res.status(401).json({
                 success: false,
-                messgae: 'This Page is protected only for Admin'
+                message: 'This Page is protected only for Admin'
             })
         }
         // go to next middleware
@@ -134,7 +124,7 @@ exports.isAdmin = (req, res, next) => {
         return res.status(500).json({
             success: false,
             error: error.message,
-            messgae: 'Error while cheching user validity with Admin accountType'
+            message: 'Error while cheching user validity with Admin accountType'
         })
     }
 }

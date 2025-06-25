@@ -1,6 +1,6 @@
-// Required installations:
-// npm install react-datepicker
-// You may also create a file called 'custom-datepicker.css' to customize datepicker colors if needed.
+// Profile.jsx
+// Required: npm install axios react-datepicker
+// Backend: Expects /updateUserProfileImage and /updateProfile endpoints
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
@@ -19,6 +19,7 @@ import { Trash, Save, Mail } from 'lucide-react';
 
 const Profile = () => {
   const { user, logout } = useAuthStore();
+
   const [profileData, setProfileData] = useState({
     about: '',
     gender: '',
@@ -26,19 +27,22 @@ const Profile = () => {
     contactNumber: '',
   });
   const [editMode, setEditMode] = useState(false);
+  const [userImage, setUserImage] = useState('');
 
   const fetchUserProfile = async () => {
     try {
       const res = await axios.get('http://localhost:4000/api/v1/profile/getUserDetails', {
         withCredentials: true,
       });
-      const data = res.data.data.additionalDetails;
+      const userRes = res.data.data;
+      const data = userRes.additionalDetails;
       setProfileData({
         about: data.about || '',
         gender: data.gender || '',
         dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : '',
         contactNumber: data.contactNumber || '',
       });
+      setUserImage(userRes.image);
     } catch (err) {
       console.error('Error loading profile', err);
     }
@@ -46,21 +50,24 @@ const Profile = () => {
 
   const saveProfile = async () => {
     try {
+      const formattedDOB = profileData.dateOfBirth instanceof Date
+        ? profileData.dateOfBirth.toISOString().split('T')[0]
+        : profileData.dateOfBirth; // fallback if already string
+  
       await axios.put(
         'http://localhost:4000/api/v1/profile/updateProfile',
         {
           ...profileData,
-          dateOfBirth: profileData.dateOfBirth?.toISOString().split('T')[0],
+          dateOfBirth: formattedDOB,
         },
-        {
-          withCredentials: true,
-        }
+        { withCredentials: true }
       );
       setEditMode(false);
     } catch (err) {
       console.error('Failed to save profile', err);
     }
   };
+  
 
   const handleDelete = async () => {
     if (!window.confirm('Are you sure you want to delete your account?')) return;
@@ -71,6 +78,30 @@ const Profile = () => {
       logout();
     } catch (err) {
       console.error('Failed to delete account', err);
+    }
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('profileImage', file);
+
+    try {
+      const res = await axios.put(
+        'http://localhost:4000/api/v1/profile/updateUserProfileImage',
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          withCredentials: true,
+        }
+      );
+      alert('Profile image updated');
+      setUserImage(res.data.data.image);
+    } catch (error) {
+      console.error('Image update failed', error);
+      alert('Failed to update image');
     }
   };
 
@@ -91,17 +122,29 @@ const Profile = () => {
             <Card className="bg-space-light/30 border border-space-light text-white">
               <CardContent className="p-6">
                 <div className="text-center">
-                  <div className="w-24 h-24 rounded-full bg-space-accent text-3xl font-bold text-white flex items-center justify-center mx-auto">
-                    {user?.firstName?.[0]}{user?.lastName?.[0]}
+                  <div className="w-24 h-24 mx-auto rounded-full overflow-hidden border-2 border-space-accent">
+                    {userImage ? (
+                      <img src={userImage} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="bg-space-accent w-full h-full flex items-center justify-center text-3xl font-bold text-white">
+                        {user?.firstName?.[0]}{user?.lastName?.[0]}
+                      </div>
+                    )}
                   </div>
+                  {editMode && (
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="w-full mt-2 text-sm text-white"
+                    />
+                  )}
                   <h3 className="mt-4 text-xl">{user?.firstName} {user?.lastName}</h3>
                   <p className="text-gray-400">{user?.accountType}</p>
                 </div>
                 <Separator className="my-4 bg-space-light" />
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-gray-300">
-                    <Mail size={16} /> {user?.email}
-                  </div>
+                <div className="flex items-center gap-2 text-gray-300">
+                  <Mail size={16} /> {user?.email}
                 </div>
                 <Separator className="my-4 bg-space-light" />
                 <Button variant="destructive" onClick={handleDelete} className="w-full">

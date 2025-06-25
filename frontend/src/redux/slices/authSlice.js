@@ -13,9 +13,11 @@ export const useAuthStore = create(
       loginSuccess: (user) =>
         set({
           user,
+          token: user.token, // ✅ add this
           isAuthenticated: true,
           isLoading: false,
         }),
+      
       loginFail: () =>
         set({
           user: null,
