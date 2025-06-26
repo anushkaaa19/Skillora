@@ -26,12 +26,11 @@ const StudentDashboard = () => {
   useEffect(() => {
     const fetchLearningHours = async () => {
       try {
-        const res = await axios.get("http://localhost:4000/api/v1/course/dashboard/learning-hours", {
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/v1/course/dashboard/learning-hours`, {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
         });
   
-        console.log("🎓 Learning hours received:", res.data?.data);  // ✅ Add this
         setLearningHours(res.data?.data || 0);
       } catch (err) {
         console.error("Failed to fetch learning hours:", err);
@@ -44,7 +43,7 @@ const StudentDashboard = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const res = await fetch("http://localhost:4000/api/v1/course/getAllCourses");
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/v1/course/getAllCourses`);
         const data = await res.json();
         if (data.success) {
           useCourseStore.getState().setCourses(data.data);
@@ -66,7 +65,7 @@ const StudentDashboard = () => {
     const fetchProgress = async () => {
       if (!token) return;
       try {
-        const res = await axios.get("http://localhost:4000/api/v1/course/dashboard/progress", {
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/v1/course/dashboard/progress`, {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
         });
@@ -91,7 +90,7 @@ const StudentDashboard = () => {
         if (progress === 100) {
           try {
             await axios.post(
-              "http://localhost:4000/api/v1/certificate/issue",
+              `${process.env.REACT_APP_API_URL}/v1/certificate/issue`,
               { courseId: course._id },
               {
                 headers: { Authorization: `Bearer ${token}` },
@@ -111,7 +110,7 @@ const StudentDashboard = () => {
   useEffect(() => {
     const fetchCertificates = async () => {
       try {
-        const res = await axios.get("http://localhost:4000/api/v1/certificate/issue", {
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/v1/certificate/issue`, {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
         });

@@ -37,7 +37,7 @@ const isStudent = user?.accountType === "student";
   useEffect(() => {
     const fetchCourseDetails = async () => {
       try {
-        const res = await axios.post(`http://localhost:4000/api/v1/course/getCourseDetails`, {
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/v1/course/getCourseDetails`, {
           courseId,
         });
 

@@ -27,7 +27,7 @@ const CourseStructureEditor = () => {
   const fetchCourse = async () => {
     try {
       const res = await axios.post(
-        'http://localhost:4000/api/v1/course/getFullCourseDetails',
+        `${process.env.REACT_APP_API_URL}/v1/course/getFullCourseDetails`,
         { courseId },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -57,7 +57,7 @@ const CourseStructureEditor = () => {
     formData.instructions.split('\n').forEach(i => fd.append('instructions', i));
 
     try {
-      await axios.post('http://localhost:4000/api/v1/course/editCourse', fd, {
+      await axios.post(`${process.env.REACT_APP_API_URL}/v1/course/editCourse`, fd, {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
       });
@@ -73,7 +73,7 @@ const CourseStructureEditor = () => {
     if (!newSection.trim()) return;
     try {
       await axios.post(
-        'http://localhost:4000/api/v1/course/addSection',
+        `${process.env.REACT_APP_API_URL}/v1/course/addSection`,
         { courseId, sectionName: newSection },
         { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
       );
@@ -88,7 +88,7 @@ const CourseStructureEditor = () => {
   const handleUpdateSection = async (sectionId, name) => {
     try {
       await axios.post(
-        'http://localhost:4000/api/v1/course/updateSection',
+        `${process.env.REACT_APP_API_URL}/v1/course/updateSection`,
         { sectionId, sectionName: name, courseId },
         { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
       );
@@ -103,7 +103,7 @@ const CourseStructureEditor = () => {
   const handleDeleteSection = async (sectionId) => {
     try {
       await axios.post(
-        'http://localhost:4000/api/v1/course/deleteSection',
+        `${process.env.REACT_APP_API_URL}/v1/course/deleteSection`,
         { sectionId, courseId },
         { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
       );
@@ -124,7 +124,7 @@ const CourseStructureEditor = () => {
     if (videoFile) form.append('videoFile', videoFile);
 
     try {
-      await axios.post('http://localhost:4000/api/v1/course/updateSubSection', form, {
+      await axios.post(`${process.env.REACT_APP_API_URL}/v1/course/updateSubSection`, form, {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
       });
@@ -147,7 +147,7 @@ const CourseStructureEditor = () => {
       form.append('description', description);
       form.append('video', videoFile);
       form.append('sectionId', sectionId);
-      await axios.post('http://localhost:4000/api/v1/course/addSubSection', form, {
+      await axios.post(`${process.env.REACT_APP_API_URL}/v1/course/addSubSection`, form, {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
       });
@@ -164,7 +164,7 @@ const CourseStructureEditor = () => {
   const handleDeleteSubsection = async (subSectionId, sectionId) => {
     try {
       await axios.post(
-        'http://localhost:4000/api/v1/course/deleteSubSection',
+        `${process.env.REACT_APP_API_URL}/v1/course/deleteSubSection`,
         { subSectionId, sectionId },
         { headers: { Authorization: `Bearer ${token}` }, withCredentials: true }
       );

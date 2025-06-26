@@ -17,7 +17,7 @@ const CoursePlayer = () => {
     const fetchCourse = async () => {
       try {
         const res = await axios.post(
-          "http://localhost:4000/api/v1/course/getFullCourseDetails",
+          `${process.env.REACT_APP_API_URL}/v1/course/getFullCourseDetails`,
           { courseId },
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -44,11 +44,10 @@ const CoursePlayer = () => {
   }, [courseId, token]);
 
   const markVideoCompleted = async (subsectionId) => {
-    console.log("📤 Marking completed", { courseId, subsectionId });
 
     try {
       const res = await axios.post(
-        "http://localhost:4000/api/v1/course/updateCourseProgress",
+        `${process.env.REACT_APP_API_URL}/v1/course/updateCourseProgress`,
         { courseId, subsectionId },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -56,7 +55,6 @@ const CoursePlayer = () => {
         }
       );
 
-      console.log("✅ Video marked as completed:", res.data);
       setCompletedVideos((prev) => [...new Set([...prev, subsectionId])]);
     } catch (err) {
       console.error("❌ Failed to mark video completed:", err.response?.data || err);

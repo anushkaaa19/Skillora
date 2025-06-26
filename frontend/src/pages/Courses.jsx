@@ -39,7 +39,7 @@ const Courses = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch('http://localhost:4000/api/v1/course/showAllCategories');
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/v1/course/showAllCategories`);
         const json = await res.json();
         if (json.success) {
           const names = [...new Set(json.data.map(c => c.name))]; // ✅ De-duplicate
@@ -58,7 +58,7 @@ const Courses = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const res = await fetch('http://localhost:4000/api/v1/course/getAllCourses');
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/v1/course/getAllCourses`);
         const json = await res.json();
         if (json.success) {
           setCourses(json.data);

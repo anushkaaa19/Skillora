@@ -48,7 +48,7 @@ const AskDoubts = () => {
     const all = [];
     for (const course of user.courses) {
       try {
-        const res = await fetch(`http://localhost:4000/api/v1/questions/${course._id}`, {
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/v1/questions/${course._id}`, {
           method: 'GET',
           headers: { 'Authorization': `Bearer ${token}` },
         });
@@ -66,7 +66,7 @@ const AskDoubts = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch("http://localhost:4000/api/v1/course/showAllCategories");
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/v1/course/showAllCategories`);
         const data = await res.json();
         if (data.success) {
           const uniqueNames = [...new Set(data.data.map(c => c.name))];
@@ -84,7 +84,7 @@ const AskDoubts = () => {
       return toast({ title: "All fields are required.", description: "Please complete the form.", variant: "destructive" });
     }
     try {
-      const res = await fetch(`http://localhost:4000/api/v1/questions/${selectedCourseId}`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/v1/questions/${selectedCourseId}`, {
         method: 'POST',
         headers: {
           "Content-Type": "application/json",
@@ -109,7 +109,7 @@ const AskDoubts = () => {
     const content = replyInputs[questionId];
     if (!content) return;
     try {
-      const res = await fetch(`http://localhost:4000/api/v1/questions/reply/${questionId}`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/v1/questions/reply/${questionId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

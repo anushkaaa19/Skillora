@@ -42,7 +42,7 @@ const Signup = () => {
 
     setIsLoading(true);
     try {
-      const res = await fetch("http://localhost:4000/api/v1/auth/sendotp", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/v1/auth/sendotp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -80,7 +80,7 @@ const Signup = () => {
     setIsLoading(true);
 
     try {
-      const res = await fetch("http://localhost:4000/api/v1/auth/signup", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/v1/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -126,23 +126,17 @@ const Signup = () => {
     setIsLoading(true);
   
     try {
-      console.log("🚀 Initiating Google Sign-In...");
   
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       const token = await user.getIdToken();
   
-      console.log("✅ Firebase Auth successful:");
-      console.log("👤 Name:", user.displayName);
-      console.log("📧 Email:", user.email);
-      console.log("🪪 ID Token:", token.slice(0, 20) + "...");
-  
+      
       const roleToSend =
         role?.toLowerCase() === "instructor" ? "Instructor" : "student";
   
-      console.log("🎓 Role being sent to backend:", roleToSend);
   
-      const res = await fetch("http://localhost:4000/api/v1/auth/google-login", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/v1/auth/google-login`, {
         method: "POST",
         credentials: "include",
         headers: {

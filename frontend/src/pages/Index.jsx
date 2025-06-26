@@ -20,53 +20,12 @@ const Index = () => {
   useEffect(() => {
     getCourses(); // ✅ Fetch courses on mount
   }, []);
-  const leaderboardUsers = [
-    {
-      id: '1',
-      name: 'Emma Thompson',
-      avatar: 'https://i.pravatar.cc/100?img=1',
-      points: 12500,
-      rank: 1,
-      level: 'Cosmic Explorer',
-    },
-    {
-      id: '2',
-      name: 'James Wilson',
-      avatar: 'https://i.pravatar.cc/100?img=2',
-      points: 11200,
-      rank: 2,
-      level: 'Starship Captain',
-    },
-    {
-      id: '3',
-      name: 'Olivia Martinez',
-      avatar: 'https://i.pravatar.cc/100?img=3',
-      points: 10800,
-      rank: 3,
-      level: 'Nebula Navigator',
-    },
-    {
-      id: '4',
-      name: 'Daniel Johnson',
-      avatar: 'https://i.pravatar.cc/100?img=4',
-      points: 9600,
-      rank: 4,
-      level: 'Galaxy Guardian',
-    },
-    {
-      id: '5',
-      name: 'Sophia Garcia',
-      avatar: 'https://i.pravatar.cc/100?img=5',
-      points: 8900,
-      rank: 5,
-      level: 'Comet Chaser',
-    }
-  ];
-
+ 
+  
   useEffect(() => {
     const fetchFeaturedCourses = async () => {
       try {
-        const res = await fetch('http://localhost:4000/api/v1/course/getAllCourses');
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/v1/course/getAllCourses`);
         const json = await res.json();
         if (json.success) {
           const topRated = json.data
@@ -120,7 +79,6 @@ const Index = () => {
         <HeroSection />
         <FeaturedCourses courses={featuredCourses} onAddToCart={handleAddToCart} />
         <FeatureSection />
-        <LeaderboardSection users={leaderboardUsers} />
       </main>
 
       <Footer />

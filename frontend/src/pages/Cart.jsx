@@ -40,20 +40,16 @@ const Cart = () => {
     }
 
     const courseIds = items.map((item) => item._id);
-    console.log("🛒 Checkout initiated for courses:", courseIds);
 
     try {
       const res = await axios.post(
-        `http://localhost:4000/api/v1/payment/capturePayment`,
+        `${process.env.REACT_APP_API_URL}/v1/payment/capturePayment`,
         { coursesId: courseIds },
         { withCredentials: true }
       );
 
-      console.log("✅ capturePayment response:", res.data);
 
       const { id: order_id, amount, currency } = res.data.message;
-      console.log("🔑 RAZORPAY_KEY in env:", process.env.REACT_APP_RAZORPAY_KEY);
-
 
       const options = {
         
@@ -66,10 +62,9 @@ const Cart = () => {
         image: "/logo.png",
         order_id,
         handler: async function (response) {
-          console.log("🔐 Razorpay Response:", response);
           try {
             const verifyRes = await axios.post(
-              `http://localhost:4000/api/v1/payment/verifyPayment`,
+              `${process.env.REACT_APP_API_URL}/v1/payment/verifyPayment`,
               {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
@@ -79,7 +74,6 @@ const Cart = () => {
               { withCredentials: true }
             );
 
-            console.log("✅ Payment verified:", verifyRes.data);
 
             if (verifyRes.data.success) {
               clearCart();
@@ -106,7 +100,6 @@ const Cart = () => {
           color: "#6366f1",
         },
       };
-      console.log("📦 window.Razorpay exists?", typeof window.Razorpay);
 
       const rzp = new window.Razorpay(options);
       rzp.open();

@@ -31,7 +31,7 @@ const Profile = () => {
 
   const fetchUserProfile = async () => {
     try {
-      const res = await axios.get('http://localhost:4000/api/v1/profile/getUserDetails', {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/v1/profile/getUserDetails`, {
         withCredentials: true,
       });
       const userRes = res.data.data;
@@ -55,7 +55,7 @@ const Profile = () => {
         : profileData.dateOfBirth; // fallback if already string
   
       await axios.put(
-        'http://localhost:4000/api/v1/profile/updateProfile',
+        `${process.env.REACT_APP_API_URL}/v1/profile/updateProfile`,
         {
           ...profileData,
           dateOfBirth: formattedDOB,
@@ -72,7 +72,7 @@ const Profile = () => {
   const handleDelete = async () => {
     if (!window.confirm('Are you sure you want to delete your account?')) return;
     try {
-      await axios.delete('http://localhost:4000/api/v1/profile/deleteProfile', {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/v1/profile/deleteProfile`, {
         withCredentials: true,
       });
       logout();
@@ -90,7 +90,7 @@ const Profile = () => {
 
     try {
       const res = await axios.put(
-        'http://localhost:4000/api/v1/profile/updateUserProfileImage',
+        `${process.env.REACT_APP_API_URL}/v1/profile/updateUserProfileImage`,
         formData,
         {
           headers: { 'Content-Type': 'multipart/form-data' },

@@ -18,7 +18,7 @@ const ReviewSection = ({ courseId }) => {
 
   const fetchReviews = async () => {
     try {
-      const res = await axios.get('http://localhost:4000/api/v1/course/getReviews');
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/v1/course/getReviews`);
       const courseReviews = res.data.data.filter((r) => r.course._id === courseId);
       setAllReviews(courseReviews);
 
@@ -33,7 +33,7 @@ const ReviewSection = ({ courseId }) => {
     try {
       setLoading(true);
       await axios.post(
-        'http://localhost:4000/api/v1/course/createRating',
+        `${process.env.REACT_APP_API_URL}/v1/course/createRating`,
         { courseId, rating, review },
         {
           headers: { Authorization: `Bearer ${token}` },

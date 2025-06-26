@@ -32,7 +32,7 @@ const Login = () => {
     loginStart();
   
     try {
-      const res = await fetch("http://localhost:4000/api/v1/auth/login", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/v1/auth/login`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -44,12 +44,10 @@ const Login = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
 
-      console.log("🔥 Login response:", data);
       
       localStorage.setItem("token", data.token);
       loginSuccess({ ...data.user, token: data.token });
       
-      console.log("✅ Zustand state after login:", useAuthStore.getState());
       
       toast({
         title: "Login successful",
@@ -57,7 +55,6 @@ const Login = () => {
       });
       
       // 🧠 Log what role is coming
-      console.log("🔍 accountType:", data.user.accountType);
       
       navigate(data.user.accountType?.toLowerCase() === "instructor" ? "/instructor/dashboard" : "/student/dashboard");
     } catch (err) {
@@ -75,18 +72,14 @@ const Login = () => {
     loginStart();
   
     try {
-      console.log("🔄 Initiating Google Sign-In...");
   
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       const token = await user.getIdToken();
   
-      console.log("✅ Firebase Google login successful");
-      console.log("👤 User Name:", user.displayName);
-      console.log("📧 Email:", user.email);
-      console.log("🪪 Token (truncated):", token.slice(0, 20) + "...");
   
-      const res = await fetch("http://localhost:4000/api/v1/auth/google-login", {
+  
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/v1/auth/google-login`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -104,9 +97,7 @@ const Login = () => {
         throw new Error(data.message || "Google login failed");
       }
   
-      console.log("✅ Backend login success, user:", data.user);
       localStorage.setItem("token", data.token);
-console.log("📦 Saved token:", data.token);
 
 
       loginSuccess(data.user);

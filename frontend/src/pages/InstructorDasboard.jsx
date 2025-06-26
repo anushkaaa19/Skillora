@@ -62,7 +62,6 @@ const InstructorDashboard = () => {
     students: course.studentsEnrolled?.length || 0,
   }));
   // Debug logs to understand why revenue graph shows 0
-console.log("📚 Instructor Courses:", instructorCourses);
 
 instructorCourses.forEach((course) => {
   const createdAt = new Date(course.createdAt);
@@ -74,14 +73,10 @@ instructorCourses.forEach((course) => {
   const month = createdAt.getMonth(); // 0 for Jan, 5 for June
   const revenue = (course.studentsEnrolled?.length || 0) * (course.price || 0);
 
-  console.log(
-    `📅 ${course.courseName} | Month: ${month} | ₹${course.price} x ${course.studentsEnrolled?.length || 0} = ₹${revenue}`
-  );
 
   revenueData[month].revenue += revenue;
 });
 
-console.log("📊 Final Revenue Graph Data:", revenueData);
 
 
   return (

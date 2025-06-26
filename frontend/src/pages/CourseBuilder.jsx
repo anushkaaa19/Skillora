@@ -31,7 +31,7 @@ const CourseBuilder = () => {
   async function fetchCourse() {
     try {
       const { data } = await axios.post(
-        'http://localhost:4000/api/v1/course/getCourseDetails',
+        `${process.env.REACT_APP_API_URL}/v1/course/getCourseDetails`,
         { courseId },
         {
           withCredentials: true,
@@ -51,7 +51,7 @@ const CourseBuilder = () => {
     if (!sectionName) return;
     try {
       const { data } = await axios.post(
-        'http://localhost:4000/api/v1/course/addSection',
+        `${process.env.REACT_APP_API_URL}/v1/course/addSection`,
         { sectionName, courseId },
         { withCredentials: true }
       );
@@ -66,7 +66,7 @@ const CourseBuilder = () => {
   async function handleDeleteSection(sectionId) {
     try {
       const { data } = await axios.post(
-        'http://localhost:4000/api/v1/course/deleteSection',
+        `${process.env.REACT_APP_API_URL}/v1/course/deleteSection`,
         { sectionId, courseId },
         { withCredentials: true }
       );
@@ -92,7 +92,7 @@ const CourseBuilder = () => {
 
     try {
       const { data } = await axios.post(
-        'http://localhost:4000/api/v1/course/addSubSection',
+       ` ${process.env.REACT_APP_API_URL}/v1/course/addSubSection`,
         form,
         {
           headers: { 'Content-Type': 'multipart/form-data' },
@@ -110,7 +110,7 @@ const CourseBuilder = () => {
   async function handleDeleteSubsection(sectionId, subId) {
     try {
       const { data } = await axios.post(
-        'http://localhost:4000/api/v1/course/deleteSubSection',
+        `${process.env.REACT_APP_API_URL}/v1/course/deleteSubSection`,
         { sectionId, subSectionId: subId },
         { withCredentials: true }
       );

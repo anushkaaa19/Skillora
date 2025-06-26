@@ -16,9 +16,8 @@ export const useCourseStore = create((set) => ({
   // ✅ Corrected endpoint
   getCourses: async () => {
     try {
-      const res = await axios.get("http://localhost:4000/api/v1/course/getAllCourses");
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/v1/course/getAllCourses`);
       const data = res.data?.data || [];
-      console.log("📦 Courses fetched from backend:", data);
       set({ courses: data, filteredCourses: data });
     } catch (error) {
       console.error("❌ Failed to fetch courses:", error);

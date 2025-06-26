@@ -8,7 +8,7 @@ const ReviewList = ({ courseId }) => {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const res = await axios.get("http://localhost:4000/api/v1/course/getReviews");
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/v1/course/getReviews`);
         const courseReviews = res.data.data.filter((r) => r.course._id === courseId);
         setReviews(courseReviews);
       } catch (err) {

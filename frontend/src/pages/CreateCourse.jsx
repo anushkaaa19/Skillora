@@ -37,7 +37,7 @@ const CreateCourse = () => {
 
   useEffect(() => {
     axios
-      .get('http://localhost:4000/api/v1/course/showAllCategories')
+      .get(`${process.env.REACT_APP_API_URL}/v1/course/showAllCategories`)
       .then(res => setCategories(res.data.data))
       .catch(console.error);
   }, []);
@@ -77,7 +77,7 @@ const CreateCourse = () => {
       }
   
       await axios.post(
-        "http://localhost:4000/api/v1/course/createCategory",
+        `${process.env.REACT_APP_API_URL}/v1/course/createCategory`,
         {
           name: newCat,
           description: newCat,
@@ -93,7 +93,7 @@ const CreateCourse = () => {
       toast({ title: "Category added!" });
       setNewCat("");
   
-      const res = await axios.get("http://localhost:4000/api/v1/course/showAllCategories");
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/v1/course/showAllCategories`);
       setCategories(res.data.data);
     } catch (err) {
       console.error(err);
@@ -120,7 +120,7 @@ const CreateCourse = () => {
 
     try {
       const res = await axios.post(
-        'http://localhost:4000/api/v1/course/createCourse',
+        `${process.env.REACT_APP_API_URL}/v1/course/createCourse`,
         data,
         { headers: { 'Content-Type': 'multipart/form-data' }, withCredentials: true }
       );
