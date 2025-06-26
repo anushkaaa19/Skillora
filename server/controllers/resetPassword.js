@@ -27,7 +27,7 @@ exports.resetPasswordToken = async (req, res) => {
       await user.save();
       console.log("✅ Token saved to DB");
   
-      const frontendURL = `http://localhost:3000/reset-password/${rawToken}`;
+      const frontendURL = `https://skillora-frontend.onrender.com/reset-password/${rawToken}`;
       const htmlContent = `<p>Reset link: <a href="${frontendURL}">${frontendURL}</a></p>`;
   
       await mailSender(user.email, "Reset Your Password", htmlContent);

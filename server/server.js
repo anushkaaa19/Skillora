@@ -22,15 +22,16 @@ const certificateRoutes=require ('./routes/certificate');
 
 
 // middleware 
+const allowedOrigins = [
+    'https://skillora-frontend.onrender.com',
+    'http://localhost:3000'  // for local testing
+  ];
 app.use(express.json()); // to parse json body
 app.use(cookieParser());
-app.use(
-    cors({
-        // origin: 'http://localhost:5173', // frontend link
-        origin: "http://localhost:3000",
-        credentials: true
-    })
-);
+app.use(cors({
+    origin: allowedOrigins,
+    credentials: true
+  }));
 app.use(
     fileUpload({
         useTempFiles: true,
