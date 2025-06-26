@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -16,40 +16,73 @@ import {
   CartesianGrid,
   Tooltip,
 } from 'recharts';
+
 import ShootingStars from '../components/ShootingStars';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
 import { useAuthStore } from '../redux/slices/authSlice';
 import { useCourseStore } from '../redux/slices/courseSlice';
-// Sample data for charts
-const revenueData = [
-  { name: 'Jan', revenue: 2400 },
-  { name: 'Feb', revenue: 1398 },
-  { name: 'Mar', revenue: 9800 },
-  { name: 'Apr', revenue: 3908 },
-  { name: 'May', revenue: 4800 },
-  { name: 'Jun', revenue: 3800 },
-  { name: 'Jul', revenue: 4300 },
-];
 
-const studentsData = [
-  { name: 'Astronomy 101', students: 120 },
-  { name: 'Physics for Space', students: 85 },
-  { name: 'Rocket Science', students: 65 },
-  { name: 'Space Law', students: 42 },
-];
-
+const monthsOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 const InstructorDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const user = useAuthStore((state) => state.user);
   const courses = useCourseStore((state) => state.courses);
+  const getCourses = useCourseStore((state) => state.getCourses);
 
-  const instructorCourses = courses.slice(0, 4);
-  const totalStudents = 312;
-  const totalRevenue = 9845.75;
+  useEffect(() => {
+    getCourses();
+  }, []);
+
+  const instructorCourses = courses.filter(
+    (course) => course?.instructor?._id === user?._id
+  );
+
+  const totalStudents = instructorCourses.reduce(
+    (sum, course) => sum + (course.studentsEnrolled?.length || 0),
+    0
+  );
+
+  const totalRevenue = instructorCourses.reduce(
+    (sum, course) => sum + (course.studentsEnrolled?.length || 0) * (course.price || 0),
+    0
+  );
+
   const totalCourses = instructorCourses.length;
+
+  // ✅ Dynamic revenueData from actual courses
+  const revenueData = Array.from({ length: 12 }, (_, i) => ({
+    name: new Date(0, i).toLocaleString("default", { month: "short" }),
+    revenue: 0,
+  }));
+  const studentsData = instructorCourses.map((course) => ({
+    name: course.courseName || "Untitled",
+    students: course.studentsEnrolled?.length || 0,
+  }));
+  // Debug logs to understand why revenue graph shows 0
+console.log("📚 Instructor Courses:", instructorCourses);
+
+instructorCourses.forEach((course) => {
+  const createdAt = new Date(course.createdAt);
+  if (isNaN(createdAt)) {
+    console.warn(`⚠️ Skipping invalid date for course: ${course.courseName}`);
+    return;
+  }
+
+  const month = createdAt.getMonth(); // 0 for Jan, 5 for June
+  const revenue = (course.studentsEnrolled?.length || 0) * (course.price || 0);
+
+  console.log(
+    `📅 ${course.courseName} | Month: ${month} | ₹${course.price} x ${course.studentsEnrolled?.length || 0} = ₹${revenue}`
+  );
+
+  revenueData[month].revenue += revenue;
+});
+
+console.log("📊 Final Revenue Graph Data:", revenueData);
+
 
   return (
     <div className="min-h-screen flex flex-col bg-space space-bg">
@@ -60,7 +93,7 @@ const InstructorDashboard = () => {
           <div>
             <h1 className="text-3xl font-heading font-bold text-white mb-2">Instructor Dashboard</h1>
             <p className="text-gray-400">
-              Welcome back, {user?.name || 'Instructor'}! Manage your courses and analyze your performance.
+              Welcome back, {user?.firstName || 'Instructor'}! Manage your courses and analyze your performance.
             </p>
           </div>
           <div className="mt-4 md:mt-0">
@@ -71,7 +104,8 @@ const InstructorDashboard = () => {
             </Link>
           </div>
         </div>
-        
+
+        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card className="border-space-light bg-space-light/30 backdrop-blur-sm">
             <CardContent className="p-6 flex items-center">
@@ -81,11 +115,10 @@ const InstructorDashboard = () => {
               <div>
                 <p className="text-sm text-gray-400">Total Students</p>
                 <h3 className="text-2xl font-bold text-white">{totalStudents}</h3>
-                <p className="text-xs text-green-400">+24% from last month</p>
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="border-space-light bg-space-light/30 backdrop-blur-sm">
             <CardContent className="p-6 flex items-center">
               <div className="bg-blue-500/20 p-3 rounded-full mr-4">
@@ -93,12 +126,11 @@ const InstructorDashboard = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-400">Total Revenue</p>
-                <h3 className="text-2xl font-bold text-white">${totalRevenue.toFixed(2)}</h3>
-                <p className="text-xs text-green-400">+12% from last month</p>
+                <h3 className="text-2xl font-bold text-white">₹{totalRevenue.toFixed(2)}</h3>
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="border-space-light bg-space-light/30 backdrop-blur-sm">
             <CardContent className="p-6 flex items-center">
               <div className="bg-emerald-500/20 p-3 rounded-full mr-4">
@@ -107,12 +139,12 @@ const InstructorDashboard = () => {
               <div>
                 <p className="text-sm text-gray-400">Active Courses</p>
                 <h3 className="text-2xl font-bold text-white">{totalCourses}</h3>
-                <p className="text-xs text-gray-400">across {totalCourses} categories</p>
               </div>
             </CardContent>
           </Card>
         </div>
-        
+
+        {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
           <TabsList className="bg-space-light/30 border border-space-light">
             <TabsTrigger value="overview" className="data-[state=active]:bg-space-accent data-[state=active]:text-white">
@@ -121,14 +153,10 @@ const InstructorDashboard = () => {
             <TabsTrigger value="courses" className="data-[state=active]:bg-space-accent data-[state=active]:text-white">
               My Courses
             </TabsTrigger>
-            <TabsTrigger value="students" className="data-[state=active]:bg-space-accent data-[state=active]:text-white">
-              Students
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="data-[state=active]:bg-space-accent data-[state=active]:text-white">
-              Analytics
-            </TabsTrigger>
+           
           </TabsList>
-          
+
+          {/* Overview */}
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card className="border-space-light bg-space-light/30 backdrop-blur-sm">
@@ -140,29 +168,23 @@ const InstructorDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={250}>
-                    <AreaChart data={revenueData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                    <AreaChart data={revenueData}>
                       <defs>
                         <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.8}/>
-                          <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <XAxis dataKey="name" stroke="#94a3b8" />
                       <YAxis stroke="#94a3b8" />
                       <CartesianGrid strokeDasharray="3 3" stroke="#2c3448" />
                       <Tooltip contentStyle={{ backgroundColor: '#1f2937', borderColor: '#374151' }} />
-                      <Area 
-                        type="monotone" 
-                        dataKey="revenue" 
-                        stroke="#8B5CF6" 
-                        fillOpacity={1} 
-                        fill="url(#colorRevenue)" 
-                      />
+                      <Area type="monotone" dataKey="revenue" stroke="#8B5CF6" fillOpacity={1} fill="url(#colorRevenue)" />
                     </AreaChart>
                   </ResponsiveContainer>
                 </CardContent>
               </Card>
-              
+
               <Card className="border-space-light bg-space-light/30 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center">
@@ -172,7 +194,7 @@ const InstructorDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={250}>
-                    <RechartsBarChart data={studentsData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                    <RechartsBarChart data={studentsData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#2c3448" />
                       <XAxis dataKey="name" stroke="#94a3b8" />
                       <YAxis stroke="#94a3b8" />
@@ -184,41 +206,37 @@ const InstructorDashboard = () => {
               </Card>
             </div>
           </TabsContent>
-          
+
+          {/* Courses Tab */}
           <TabsContent value="courses" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {instructorCourses.map((course) => (
-                <Card key={course.id} className="border-space-light bg-space-light/30 backdrop-blur-sm">
+                <Card key={course._id} className="border-space-light bg-space-light/30 backdrop-blur-sm">
                   <CardHeader>
-                    <CardTitle className="text-white">{course.title}</CardTitle>
-                    <p className="text-gray-400 text-sm">{course.description}</p>
+                    <CardTitle className="text-white">{course.courseName || 'Untitled Course'}</CardTitle>
+                    <p className="text-gray-400 text-sm">{course.courseDescription || 'No description provided.'}</p>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-300 text-sm mb-2">Enrolled Students: {course.enrolledCount || 0}</p>
+                    <p className="text-gray-300 text-sm mb-2">
+                      Enrolled Students: {course.studentsEnrolled?.length || 0}
+                    </p>
                     <Progress value={course.progress || 0} className="mb-2" />
-                    <Button variant="outline" size="sm" className="w-full">
-                      Manage Course
-                    </Button>
+                    <Link to={`/instructor/course/${course._id}/manage`}>
+  <Button variant="outline" size="sm" className="w-full">
+    Manage Course
+  </Button>
+</Link>
+
                   </CardContent>
                 </Card>
               ))}
             </div>
           </TabsContent>
-          
-          <TabsContent value="students" className="space-y-6">
-            <Card className="border-space-light bg-space-light/30 backdrop-blur-sm p-6">
-              <p className="text-gray-400">Detailed student information and messaging features would be implemented here.</p>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="analytics" className="space-y-6">
-            <Card className="border-space-light bg-space-light/30 backdrop-blur-sm p-6">
-              <p className="text-gray-400">Advanced analytics and insights would be implemented here.</p>
-            </Card>
-          </TabsContent>
+
+          {/* Analytics Tab */}
+         
         </Tabs>
       </main>
-      
       <Footer />
     </div>
   );

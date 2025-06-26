@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Separator } from "../components/ui/separator";
@@ -9,13 +9,17 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useCartStore } from "../redux/slices/cartSlice";
 import { toast } from "../hooks/use-toast";
+import axios from "axios";
 
 const Cart = () => {
+  console.log("🧪 ENV TEST KEY:", process.env.REACT_APP_RAZORPAY_KEY);
+
+  const navigate = useNavigate();
   const items = useCartStore((state) => state.items);
   const removeFromCart = useCartStore((state) => state.removeFromCart);
   const clearCart = useCartStore((state) => state.clearCart);
 
-  const total = items.reduce((acc, item) => acc + item.price, 0);
+  const total = items.reduce((acc, item) => acc + (item.price || 0), 0);
 
   const handleRemoveItem = (id) => {
     removeFromCart(id);
@@ -25,7 +29,7 @@ const Cart = () => {
     });
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (items.length === 0) {
       toast({
         title: "Cart is empty",
@@ -35,19 +39,89 @@ const Cart = () => {
       return;
     }
 
-    toast({
-      title: "Processing payment",
-      description: "Your order is being processed...",
-    });
+    const courseIds = items.map((item) => item._id);
+    console.log("🛒 Checkout initiated for courses:", courseIds);
 
-    setTimeout(() => {
-      clearCart();
+    try {
+      const res = await axios.post(
+        `http://localhost:4000/api/v1/payment/capturePayment`,
+        { coursesId: courseIds },
+        { withCredentials: true }
+      );
+
+      console.log("✅ capturePayment response:", res.data);
+
+      const { id: order_id, amount, currency } = res.data.message;
+      console.log("🔑 RAZORPAY_KEY in env:", process.env.REACT_APP_RAZORPAY_KEY);
+
+
+      const options = {
+        
+        key: "rzp_test_QgXo0K42iwFBKw",
+        amount,
+        currency,
+        name: "Skillora",
+        description: "Course Purchase",
+        image: "/logo.png",
+        order_id,
+        handler: async function (response) {
+          console.log("🔐 Razorpay Response:", response);
+          try {
+            const verifyRes = await axios.post(
+              `http://localhost:4000/api/v1/payment/verifyPayment`,
+              {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                coursesId: courseIds,
+              },
+              { withCredentials: true }
+            );
+
+            console.log("✅ Payment verified:", verifyRes.data);
+
+            if (verifyRes.data.success) {
+              clearCart();
+              toast({
+                title: "Enrollment Successful!",
+                description: "You are now enrolled in your selected courses.",
+              });
+              navigate("/student/dashboard");
+            }
+          } catch (err) {
+            console.error("❌ Error verifying payment:", err.response?.data || err);
+            toast({
+              title: "Verification Failed",
+              description: "Could not verify payment.",
+              variant: "destructive",
+            });
+          }
+        },
+        prefill: {
+          name: "",
+          email: "",
+        },
+        theme: {
+          color: "#6366f1",
+        },
+      };
+      console.log("📦 window.Razorpay exists?", typeof window.Razorpay);
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error("❌ Error capturing payment:", err.response?.data || err);
       toast({
-        title: "Purchase successful!",
-        description: "Thank you for your purchase. You can now access your courses.",
+        title: "Checkout Error",
+        description:
+          err.response?.data?.message || "Unable to initiate payment.",
+        variant: "destructive",
       });
-    }, 2000);
+    }
   };
+
+  // ... (rest of your JSX code remains unchanged)
+
 
   return (
     <div className="min-h-screen flex flex-col bg-space space-bg">
@@ -81,39 +155,47 @@ const Cart = () => {
               <div className="lg:col-span-2 space-y-4">
                 {items.map((course) => (
                   <Card
-                    key={course.id}
+                    key={course._id}
                     className="border-space-light bg-space-light/30 backdrop-blur-sm overflow-hidden"
                   >
                     <CardContent className="p-0">
                       <div className="flex flex-col sm:flex-row">
                         <div className="w-full sm:w-40 h-32">
                           <img
-                            src={course.image}
-                            alt={course.title}
+                            src={course.thumbnail || course.image}
+                            alt={course.courseName || course.title}
                             className="w-full h-full object-cover"
                           />
                         </div>
                         <div className="p-4 flex-grow flex flex-col justify-between">
                           <div>
                             <h3 className="font-heading font-semibold text-white mb-1">
-                              {course.title}
+                              {course.courseName || course.title}
                             </h3>
-                            <p className="text-sm text-gray-400 mb-2">{course.instructor}</p>
+                            <p className="text-sm text-gray-400 mb-2">
+                              {course.instructor?.firstName
+                                ? `${course.instructor.firstName} ${course.instructor.lastName}`
+                                : course.instructor || "Unknown Instructor"}
+                            </p>
                             <div className="flex items-center space-x-2 text-xs text-gray-400">
-                              <span className="bg-space-light/50 px-2 py-0.5 rounded">
-                                {course.level}
-                              </span>
-                              <span>•</span>
-                              <span>{course.duration}</span>
+                              {course.level && (
+                                <>
+                                  <span className="bg-space-light/50 px-2 py-0.5 rounded">{course.level}</span>
+                                  <span>•</span>
+                                </>
+                              )}
+                              {course.duration && <span>{course.duration}</span>}
                             </div>
                           </div>
                           <div className="flex justify-between items-center mt-4">
-                            <span className="font-bold text-white">${course.price.toFixed(2)}</span>
+                            <span className="font-bold text-white">
+                              ${course.price?.toFixed(2) || "0.00"}
+                            </span>
                             <Button
                               variant="ghost"
                               size="sm"
                               className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
-                              onClick={() => handleRemoveItem(course.id)}
+                              onClick={() => handleRemoveItem(course._id)}
                             >
                               <Trash2 size={16} className="mr-1" />
                               Remove

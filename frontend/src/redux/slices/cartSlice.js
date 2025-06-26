@@ -1,20 +1,23 @@
-// src/redux/slices/cartSlice.js
-import { create } from "zustand";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
-export const useCartStore = create((set) => ({
-  items: [],
-
-  addToCart: (item) =>
-    set((state) => {
-      // Prevent duplicates
-      if (state.items.find((i) => i.id === item.id)) return state;
-      return { items: [...state.items, item] };
+export const useCartStore = create(
+  persist(
+    (set) => ({
+      items: [],
+      addToCart: (item) =>
+        set((state) => ({
+          items: [...state.items, item],
+        })),
+      removeFromCart: (id) =>
+        set((state) => ({
+          items: state.items.filter((item) => item._id !== id),
+        })),
+      clearCart: () => set({ items: [] }),
     }),
-
-  removeFromCart: (itemId) =>
-    set((state) => ({
-      items: state.items.filter((item) => item.id !== itemId),
-    })),
-
-  clearCart: () => set({ items: [] }),
-}));
+    {
+      name: 'cart-storage', // 👈 Key in localStorage
+      getStorage: () => localStorage, // optional, default
+    }
+  )
+);

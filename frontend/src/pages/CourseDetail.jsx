@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useCartStore } from '../redux/slices/cartSlice';
 import { toast } from '../hooks/use-toast';
 import ReviewList from "../components/ReviewList";
+import { useAuthStore } from '../redux/slices/authSlice';
 
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -16,6 +17,9 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
 const CourseDetail = () => {
+    const { user } = useAuthStore();
+const isStudent = user?.accountType === "student";
+
   const { courseId } = useParams();
   const navigate = useNavigate();
   const { items, addToCart } = useCartStore();
@@ -150,9 +154,14 @@ const CourseDetail = () => {
                 <div className="text-2xl font-bold text-white mb-4">
                   ₹{Number(course.price).toFixed(2)}
                 </div>
-                <Button className="w-full bg-space-accent hover:bg-space-secondary text-white" onClick={handleAddToCart}>
-                  Add to Cart
-                </Button>
+                {isStudent && (
+  <Button
+    className="w-full bg-space-accent hover:bg-space-secondary text-white"
+    onClick={handleAddToCart}
+  >
+    Add to Cart
+  </Button>
+)}
               </CardContent>
             </Card>
           </div>

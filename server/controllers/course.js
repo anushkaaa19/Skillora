@@ -120,6 +120,8 @@ exports.getAllCourses = async (req, res) => {
           ratingAndReviews: true,
           studentsEnrolled: true,
           category: true,
+          createdAt: true, // ✅ INCLUDE THIS
+
         }
       )
         .populate({
@@ -283,8 +285,14 @@ exports.getFullCourseDetails = async (req, res) => {
                 },
             })
             .populate("category")
-            .populate("ratingAndReviews")
             .populate({
+                path: "ratingAndReviews",
+                populate: {
+                  path: "user",
+                  select: "firstName lastName",
+                }
+              })
+                          .populate({
                 path: "courseContent",
                 populate: {
                     path: "subSection",

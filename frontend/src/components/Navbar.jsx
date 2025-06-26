@@ -3,24 +3,22 @@ import { Button } from "../components/ui/button";
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, LogOut, User } from 'lucide-react';
 import { Badge } from "../components/ui/badge";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
 } from "../components/ui/dropdown-menu";
 import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
 import { useAuthStore } from '../redux/slices/authSlice';
-import { useCartStore } from "../redux/slices/cartSlice"; // if you use zustand cart
+import { useCartStore } from "../redux/slices/cartSlice";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isAuthenticated, user, logout } = useAuthStore();
-  console.log("👤 Logged-in user:", user);
-
-  const items = useCartStore((state) => state.items); // from zustand
+  const items = useCartStore((state) => state.items);
   const cartCount = items.length;
   const navigate = useNavigate();
 
@@ -44,24 +42,14 @@ const Navbar = () => {
 
           <div className="hidden md:block">
             <div className="ml-10 flex items-center space-x-4">
-              <Link to="/" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                Home
-              </Link>
-              <Link to="/courses" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                Courses
-              </Link>
-           
-              <Link to="/leaderboard" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                Leaderboard
-              </Link>
-              <Link to="/doubts" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-                Ask Doubts
-              </Link>
+              <Link to="/" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Home</Link>
+              <Link to="/courses" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Courses</Link>
+              <Link to="/doubts" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Ask Doubts</Link>
             </div>
           </div>
 
           <div className="flex items-center space-x-4">
-            {isAuthenticated && (
+            {isAuthenticated && user?.accountType === 'student' && (
               <Link to="/cart" className="relative text-white">
                 <ShoppingCart className="h-6 w-6" />
                 {cartCount > 0 && (
@@ -81,34 +69,36 @@ const Navbar = () => {
                         <AvatarImage src={user.profileImage} alt={user.name} />
                       ) : (
                         <AvatarFallback className="bg-space-accent text-white">
-  {`${user.firstName[0]}${user.lastName[0]}`.toUpperCase()}
-</AvatarFallback>
-
-                      
+                          {`${user.firstName[0]}${user.lastName[0]}`.toUpperCase()}
+                        </AvatarFallback>
                       )}
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-space-light/90 backdrop-blur-md border-space-light">
-                <DropdownMenuLabel className="text-white">
-  {`${user.firstName} ${user.lastName}`}
-</DropdownMenuLabel>
-
+                  <DropdownMenuLabel className="text-white">{`${user.firstName} ${user.lastName}`}</DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-space-light" />
-                  <DropdownMenuItem onClick={() => navigate(user.role === 'instructor' ? '/instructor/dashboard' : '/student/dashboard')}>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      navigate(
+                        user.accountType.toLowerCase() === 'instructor'
+                          ? '/instructor/dashboard'
+                          : '/student/dashboard'
+                      )
+                    }
+                  >
                     <User className="mr-2 h-4 w-4" />
                     <span>Dashboard</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/profile')}>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-space-light" />
                   <DropdownMenuItem className="text-red-400" onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Log out</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/profile')}>
-  <User className="mr-2 h-4 w-4" />
-  <span>Profile</span>
-</DropdownMenuItem>
-
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
@@ -152,7 +142,7 @@ const Navbar = () => {
               <Link to="/leaderboard" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium" onClick={() => setIsMenuOpen(false)}>Leaderboard</Link>
               <Link to="/doubts" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium" onClick={() => setIsMenuOpen(false)}>Ask Doubts</Link>
 
-              {isAuthenticated && (
+              {isAuthenticated && user?.accountType === 'student' && (
                 <Link to="/cart" className="text-gray-300 hover:text-white flex items-center px-3 py-2 rounded-md text-base font-medium" onClick={() => setIsMenuOpen(false)}>
                   <ShoppingCart className="h-5 w-5 mr-2" />
                   Cart {cartCount > 0 && `(${cartCount})`}
@@ -161,7 +151,7 @@ const Navbar = () => {
 
               {isAuthenticated && user ? (
                 <>
-                  <Link to={user.role === 'instructor' ? '/instructor/dashboard' : '/student/dashboard'} className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium" onClick={() => setIsMenuOpen(false)}>
+                  <Link to={user.accountType === 'Instructor' ? '/instructor/dashboard' : '/student/dashboard'} className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium" onClick={() => setIsMenuOpen(false)}>
                     Dashboard
                   </Link>
                   <button className="text-red-400 hover:text-red-300 flex items-center px-3 py-2 rounded-md text-base font-medium w-full" onClick={() => { handleLogout(); setIsMenuOpen(false); }}>
@@ -191,6 +181,4 @@ const Navbar = () => {
   );
 };
 
-
 export default Navbar;
-

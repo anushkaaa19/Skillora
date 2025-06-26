@@ -43,16 +43,23 @@ const Login = () => {
   
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
-  
-      localStorage.setItem("token", data.token); // ✅
-      loginSuccess({ ...data.user, token: data.token }); // ✅
-  
+
+      console.log("🔥 Login response:", data);
+      
+      localStorage.setItem("token", data.token);
+      loginSuccess({ ...data.user, token: data.token });
+      
+      console.log("✅ Zustand state after login:", useAuthStore.getState());
+      
       toast({
         title: "Login successful",
         description: `Welcome ${data.user.firstName || data.user.name}`,
       });
-  
-      navigate(data.user.accountType === "Instructor" ? "/instructor/dashboard" : "/student/dashboard");
+      
+      // 🧠 Log what role is coming
+      console.log("🔍 accountType:", data.user.accountType);
+      
+      navigate(data.user.accountType?.toLowerCase() === "instructor" ? "/instructor/dashboard" : "/student/dashboard");
     } catch (err) {
       toast({
         title: "Login failed",

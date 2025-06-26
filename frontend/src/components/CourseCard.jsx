@@ -4,8 +4,12 @@ import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { StarIcon, Clock, ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuthStore } from '../redux/slices/authSlice'; // ✅ make sure this import exists
 
 const CourseCard = ({ course, onAddToCart }) => {
+  const { user } = useAuthStore(); // ✅ hook at the top
+  const isStudent = user?.accountType === "student"; // ✅ define this before usage
+
   if (!course) return null;
 
   const {
@@ -63,13 +67,16 @@ const CourseCard = ({ course, onAddToCart }) => {
 
       <CardFooter className="pt-2 mt-auto flex items-center justify-between">
         <div className="font-semibold text-white">₹{Number(price).toFixed(2)}</div>
-        <Button
-          size="sm"
-          className="bg-space-accent hover:bg-space-secondary text-white"
-          onClick={() => onAddToCart(course)}
-        >
-          <ShoppingCart className="h-4 w-4 mr-1" /> Add to Cart
-        </Button>
+
+        {isStudent && (
+          <Button
+            size="sm"
+            className="bg-space-accent hover:bg-space-secondary text-white"
+            onClick={() => onAddToCart(course)}
+          >
+            <ShoppingCart className="h-4 w-4 mr-1" /> Add to Cart
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

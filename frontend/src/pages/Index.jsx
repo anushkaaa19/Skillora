@@ -8,6 +8,7 @@ import FeaturedCourses from '../components/FeaturedCourses';
 import LeaderboardSection from '../components/LeaderboardSection';
 import FeatureSection from '../components/FeatureSection';
 import { useAuthStore } from '../redux/slices/authSlice';
+import { useCourseStore } from '../redux/slices/courseSlice';
 
 
 const Index = () => {
@@ -15,7 +16,10 @@ const Index = () => {
   const [featuredCourses, setFeaturedCourses] = useState([]);
   
   const { isAuthenticated } = useAuthStore();
-
+  const getCourses = useCourseStore((state) => state.getCourses);
+  useEffect(() => {
+    getCourses(); // ✅ Fetch courses on mount
+  }, []);
   const leaderboardUsers = [
     {
       id: '1',

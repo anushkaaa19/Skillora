@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Courses from "./pages/Courses";
+import RoleProtectedRoute from './components/RoleProtectedRoute';
+
 import Leaderboard from "./pages/Leaderboard";
 import AskDoubts from "./pages/AskDoubts";
 import NotFound from "./pages/NotFound";
@@ -24,8 +26,10 @@ import CheckEmailPage from "./pages/CheckEmail";
 import CourseBuilder from './pages/CourseBuilder'; // ✅ import your component
 import CoursePlayer from './pages/CoursePlayer';
 import Profile from "./pages/Profile";
+import CourseStructureEditor from "./pages/CourseStructureEditor"
 const queryClient = new QueryClient();
 function App() {
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -40,21 +44,59 @@ function App() {
             <Route path="/leaderboard" element={
   <ProtectedRoute><Leaderboard /></ProtectedRoute>
 } />
-<Route path="/cart" element={
-  <ProtectedRoute><Cart /></ProtectedRoute>
-} />
+
 <Route path="/courses/:courseId" element={<CourseDetail />} />
-            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/course/:courseId" element={<CoursePlayer />} />
 <Route path="/forgot-password" element={<ForgotPassword />} />
 <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
-            <Route path="/instructor/courses/create" element={<CreateCourse />} />
-            <Route path="/instructor/course-builder/:courseId" element={<CourseBuilder />} /> {/* ✅ this is required */}
-            <Route path="/student/dashboard" element={<StudentDashboard />} />
-            <Route path="/certificate/:courseId" element={<Certificate />} />
-            <Route path="*" element={<NotFound />} />
+            <Route
+  path="/instructor/course-builder/:courseId"
+  element={
+    <RoleProtectedRoute allowedRoles={["Instructor"]}>
+      <CourseBuilder />
+    </RoleProtectedRoute>
+  }
+/>
+
+            <Route path="/instructor/dashboard" element={
+  <RoleProtectedRoute allowedRoles={["Instructor"]}>
+    <InstructorDashboard />
+  </RoleProtectedRoute>
+} />
+
+<Route path="/student/dashboard" element={
+  <RoleProtectedRoute allowedRoles={["student"]}>
+    <StudentDashboard />
+  </RoleProtectedRoute>
+} />
+
+<Route path="/instructor/courses/create" element={
+  <RoleProtectedRoute allowedRoles={["Instructor"]}>
+    <CreateCourse />
+  </RoleProtectedRoute>
+} />
+
+<Route path="/instructor/course/:courseId/manage" element={
+  <RoleProtectedRoute allowedRoles={["Instructor"]}>
+    <CourseStructureEditor />
+  </RoleProtectedRoute>
+} />
+
+<Route path="/cart" element={
+  <RoleProtectedRoute allowedRoles={["student"]}>
+    <Cart />
+  </RoleProtectedRoute>
+} />
+
+<Route path="/certificate/:courseId" element={
+  <RoleProtectedRoute allowedRoles={["student"]}>
+    <Certificate />
+  </RoleProtectedRoute>
+} />
+
+=            <Route path="*" element={<NotFound />} />
+
             <Route path="/doubts" element={<AskDoubts />} />
           </Routes>       
       </TooltipProvider>
