@@ -57,7 +57,8 @@ const Cart = () => {
 
       const options = {
         
-        key: "rzp_test_QgXo0K42iwFBKw",
+        key: process.env.REACT_APP_RAZORPAY_KEY,
+
         amount,
         currency,
         name: "Skillora",

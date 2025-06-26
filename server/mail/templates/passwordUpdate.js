@@ -16,7 +16,6 @@ exports.passwordUpdated = (email, name) => {
                 padding: 0;
             }
     
-    
             .container {
                 max-width: 600px;
                 margin: 0 auto;
@@ -50,23 +49,19 @@ exports.passwordUpdated = (email, name) => {
                 font-weight: bold;
             }
         </style>
-    
     </head>
     
     <body>
         <div class="container">
-            <a href="https://studynotion-edtech-project.vercel.app"><img class="logo"
-                    src="https://i.ibb.co/7Xyj3PC/logo.png" alt="StudyNotion Logo"></a>
+            <img class="logo" src="https://i.ibb.co/7Xyj3PC/logo.png" alt="Skillora Logo" />
             <div class="message">Password Update Confirmation</div>
             <div class="body">
                 <p>Hey ${name},</p>
-                <p>Your password has been successfully updated for the email <span class="highlight">${email}</span>.
-                </p>
+                <p>Your password has been successfully updated for the email <span class="highlight">${email}</span>.</p>
                 <p>If you did not request this password change, please contact us immediately to secure your account.</p>
             </div>
-            <div class="support">If you have any questions or need further assistance, please feel free to reach out to us
-                at
-                <a href="mailto:info@studynotion.com">info@studynotion.com</a>. We are here to help!
+            <div class="support">
+                If you have any questions or need further assistance, please feel free to reach out to us at <strong>anushka.20234036@mnnit.ac.in</strong>.
             </div>
         </div>
     </body>
