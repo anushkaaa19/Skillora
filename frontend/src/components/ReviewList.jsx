@@ -9,7 +9,7 @@ const ReviewList = ({ courseId }) => {
     const fetchReviews = async () => {
       try {
         const res = await axios.get(`${process.env.REACT_APP_API_URL}/v1/course/getReviews`);
-        const courseReviews = res.data.data.filter((r) => r.course._id === courseId);
+        const courseReviews = res.data.data.filter((r) => r.course && r.course._id === courseId);
         setReviews(courseReviews);
       } catch (err) {
         console.error("❌ Failed to load reviews", err);

@@ -133,36 +133,33 @@ exports.getAverageRating = async (req, res) => {
 
 
 
-
-
-// ================ Get All Rating And Reviews ================
-exports.getAllRatingReview = async(req, res)=>{
-    try{
-        const allReviews = await RatingAndReview.find({})
-        .sort({rating:'desc'})
+exports.getAllRatingReview = async (req, res) => {
+    try {
+      const allReviews = await RatingAndReview.find({})
+        .sort({ rating: "desc" })
         .populate({
-            path:'user',
-            select:'firstName lastName email image'
+          path: "user",
+          select: "firstName lastName email image",
         })
         .populate({
-            path:'course',
-            select:'courseName'
+          path: "course",
+          select: "_id courseName",  // ✅ Important fix here
         })
         .exec();
-
-        return res.status(200).json({
-            success:true,
-            data:allReviews,
-            message:"All reviews fetched successfully"
-        });
+  
+      return res.status(200).json({
+        success: true,
+        data: allReviews,
+        message: "All reviews fetched successfully",
+      });
+    } catch (error) {
+      console.log("Error while fetching all ratings");
+      console.log(error);
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+        message: "Error while fetching all ratings",
+      });
     }
-    catch(error){
-        console.log('Error while fetching all ratings');
-        console.log(error);
-        return res.status(500).json({
-            success: false,
-            error: error.message,
-            message: 'Error while fetching all ratings',
-        })
-    }
-}
+  };
+  
