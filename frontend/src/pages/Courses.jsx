@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "../components/ui/button";
 import { Slider } from "../components/ui/slider";
-import { Checkbox } from "../components/ui/checkbox";
 import { Input } from "../components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
@@ -30,6 +29,7 @@ const Courses = () => {
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [sortBy, setSortBy] = useState("popularity");
   const [filteredCourses, setFilteredCourses] = useState([]);
+  const [loading, setLoading] = useState(true); // ✅ Added loading state
 
   const courses = useCourseStore(state => state.courses);
   const setCourses = useCourseStore(state => state.setCourses);
@@ -42,7 +42,7 @@ const Courses = () => {
         const res = await fetch(`${process.env.REACT_APP_API_URL}/v1/course/showAllCategories`);
         const json = await res.json();
         if (json.success) {
-          const names = [...new Set(json.data.map(c => c.name))]; // ✅ De-duplicate
+          const names = [...new Set(json.data.map(c => c.name))];
           setCategories(["All", ...names]);
         } else {
           toast({ title: "Error", description: json.message });
@@ -58,6 +58,7 @@ const Courses = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
+        setLoading(true); // ✅ Start loading
         const res = await fetch(`${process.env.REACT_APP_API_URL}/v1/course/getAllCourses`);
         const json = await res.json();
         if (json.success) {
@@ -67,6 +68,8 @@ const Courses = () => {
         }
       } catch (error) {
         toast({ title: "Error", description: "Could not load courses" });
+      } finally {
+        setLoading(false); // ✅ End loading
       }
     };
 
@@ -128,29 +131,30 @@ const Courses = () => {
       });
       return;
     }
-  
+
     const isAlreadyInCart = items.some(item => item._id === course._id);
     if (isAlreadyInCart) {
       toast({
         title: "Already in cart",
         description: "This course is already in your cart.",
       });
-      navigate("/cart"); // 👈 still take them to cart
+      navigate("/cart");
       return;
     }
-  
+
     addToCart(course);
-  
+
     toast({
       title: "Course added",
       description: `${course.courseName} has been added to your cart.`,
     });
-  
-    navigate("/cart"); // ✅ redirect after add
-  };
-  
 
-  return (
+    navigate("/cart");
+  };
+
+  return loading ? (
+    <div className="text-center py-16 text-white">Loading courses...</div>
+  ) : (
     <div className="min-h-screen flex flex-col bg-space space-bg">
       <ShootingStars />
       <Navbar cartItemCount={items.length} />
@@ -162,6 +166,7 @@ const Courses = () => {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
+          {/* Sidebar Filters */}
           <div className="hidden lg:block w-64 space-y-8">
             <div className="bg-space-light/30 backdrop-blur-sm border border-space-light rounded-lg p-5">
               <h3 className="text-white font-semibold mb-4">Filters</h3>
@@ -212,7 +217,9 @@ const Courses = () => {
             </div>
           </div>
 
+          {/* Main Content */}
           <div className="flex-grow">
+            {/* Search and Sort */}
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
               <div className="relative flex-grow">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -241,6 +248,7 @@ const Courses = () => {
               </Button>
             </div>
 
+            {/* Active Filters Badges */}
             {(selectedCategory !== "All" || searchTerm) && (
               <div className="flex flex-wrap gap-2 mb-6">
                 {selectedCategory !== "All" && (
@@ -258,6 +266,7 @@ const Courses = () => {
               </div>
             )}
 
+            {/* Tabs for Course Categories */}
             <Tabs defaultValue="all" className="mb-8">
               <TabsList className="bg-space-light/30 border border-space-light">
                 <TabsTrigger value="all" className="data-[state=active]:bg-space-accent data-[state=active]:text-white">
@@ -305,6 +314,7 @@ const Courses = () => {
               </TabsContent>
             </Tabs>
 
+            {/* Pagination */}
             {filteredCourses.length > pageSize && (
               <div className="flex justify-center mt-8 space-x-1">
                 {[...Array(Math.ceil(filteredCourses.length / pageSize))].map((_, i) => (
