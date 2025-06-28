@@ -55,26 +55,19 @@ const Courses = () => {
     fetchCategories();
   }, []);
 
+  const getCourses = useCourseStore((state) => state.getCourses);
+  const totalPages = useCourseStore((state) => state.totalPages);
+  
   useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        setLoading(true); // ✅ Start loading
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/v1/course/getAllCourses`);
-        const json = await res.json();
-        if (json.success) {
-          setCourses(json.data);
-        } else {
-          toast({ title: "Error", description: json.message });
-        }
-      } catch (error) {
-        toast({ title: "Error", description: "Could not load courses" });
-      } finally {
-        setLoading(false); // ✅ End loading
-      }
+    const fetchPaginatedCourses = async () => {
+      setLoading(true);
+      await getCourses(currentPage, pageSize);
+      setLoading(false);
     };
-
-    fetchCourses();
-  }, [setCourses]);
+  
+    fetchPaginatedCourses();
+  }, [currentPage]);
+  
 
   useEffect(() => {
     let results = [...courses];
@@ -315,21 +308,22 @@ const Courses = () => {
             </Tabs>
 
             {/* Pagination */}
-            {filteredCourses.length > pageSize && (
-              <div className="flex justify-center mt-8 space-x-1">
-                {[...Array(Math.ceil(filteredCourses.length / pageSize))].map((_, i) => (
-                  <Button
-                    key={i}
-                    onClick={() => setCurrentPage(i + 1)}
-                    variant="outline"
-                    size="icon"
-                    className={`w-10 h-10 border-space-light text-white ${currentPage === i + 1 ? 'bg-space-accent' : ''}`}
-                  >
-                    {i + 1}
-                  </Button>
-                ))}
-              </div>
-            )}
+            {totalPages > 1 && (
+  <div className="flex justify-center mt-8 space-x-1">
+    {[...Array(totalPages)].map((_, i) => (
+      <Button
+        key={i}
+        onClick={() => setCurrentPage(i + 1)}
+        variant="outline"
+        size="icon"
+        className={`w-10 h-10 border-space-light text-white ${currentPage === i + 1 ? 'bg-space-accent' : ''}`}
+      >
+        {i + 1}
+      </Button>
+    ))}
+  </div>
+)}
+
           </div>
         </div>
       </main>

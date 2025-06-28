@@ -104,74 +104,80 @@ exports.createCourse = async (req, res) => {
     }
 }
 
-
-//// ================ show all courses ================
-// ================ show all courses with rating ================
 exports.getAllCourses = async (req, res) => {
-    try {
-      const allCourses = await Course.find(
-        {},
-        {
-          courseName: true,
-          courseDescription: true,
-          price: true,
-          thumbnail: true,
-          instructor: true,
-          ratingAndReviews: true,
-          studentsEnrolled: true,
-          category: true,
-          createdAt: true, // ✅ INCLUDE THIS
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-        }
-      )
-        .populate({
-          path: "instructor",
-          select: "firstName lastName email image",
-        })
-        .populate({
-          path: "category",
-          select: "name",
-        })
-        .populate({
-          path: "ratingAndReviews",
-          select: "rating", // Only need rating
-        });
-  
-      // Calculate average rating per course
-      const coursesWithRatings = allCourses.map((course) => {
-        const reviews = course.ratingAndReviews;
-        const avgRating =
+    // Optional: Filter by category or instructor if needed
+    const category = req.query.category;
+    const instructor = req.query.instructor;
+
+    const query = {};
+
+    if (category) query.category = category;
+    if (instructor) query.instructor = instructor;
+
+    const allCourses = await Course.find(query, {
+      courseName: true,
+      courseDescription: true,
+      price: true,
+      thumbnail: true,
+      instructor: true,
+      ratingAndReviews: true,
+      studentsEnrolled: true,
+      category: true,
+      createdAt: true,
+    })
+      .skip(skip)
+      .limit(limit)
+      .populate({
+        path: "instructor",
+        select: "firstName lastName email image",
+      })
+      .populate({
+        path: "category",
+        select: "name",
+      })
+      .populate({
+        path: "ratingAndReviews",
+        select: "rating",
+      });
+
+    // Total count (for frontend pagination UI)
+    const totalCourses = await Course.countDocuments(query);
+
+    const coursesWithRatings = allCourses.map((course) => {
+      const reviews = course.ratingAndReviews;
+      const avgRating =
         reviews.length > 0
           ? reviews.reduce((sum, r) => sum + Number(r.rating), 0) / reviews.length
           : 0;
-      
-  
-        return {
-          ...course.toObject(),
-          rating: Number(avgRating.toFixed(1)),
-        };
-      });
-      console.log("🎯 Total courses in DB:", allCourses.length);
-console.log("🎯 Courses with ratings computed:", coursesWithRatings.length);
-console.log("📊 Ratings of each course:");
-coursesWithRatings.forEach(c => console.log(`${c.courseName}: ${c.rating}`));
 
-  
-      return res.status(200).json({
-        success: true,
-        data: coursesWithRatings,
-        message: "Data for all courses fetched successfully",
-      });
-    } catch (error) {
-      console.log("Error while fetching data of all courses");
-      console.log(error);
-      res.status(500).json({
-        success: false,
-        error: error.message,
-        message: "Error while fetching data of all courses",
-      });
-    }
-  };
+      return {
+        ...course.toObject(),
+        rating: Number(avgRating.toFixed(1)),
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: coursesWithRatings,
+      totalCourses,
+      totalPages: Math.ceil(totalCourses / limit),
+      currentPage: page,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching courses",
+      error: error.message,
+    });
+  }
+};
+
 // ================ Get Course Details ================
 exports.getCourseDetails = async (req, res) => {
     try {
