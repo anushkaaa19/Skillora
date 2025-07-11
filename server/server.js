@@ -32,6 +32,8 @@ app.use(cors({
     origin: allowedOrigins,
     credentials: true
   }));
+  app.options('*', cors()); // ✅ Add this line
+
 app.use(
     fileUpload({
         useTempFiles: true,
