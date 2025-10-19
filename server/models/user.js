@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema(
     },
     accountType: {
       type: String,
-      enum: ['Admin', 'Instructor', 'student'],
+      enum: ['Admin', 'Instructor', 'student','Student'],
       required: true
     },
     active: {
@@ -45,11 +45,13 @@ const userSchema = new mongoose.Schema(
     image: {
       type: String,
     },
-    loginType: {
-      type: String,
-      enum: ['normal', 'google'],
-      required: true,
-    },
+  loginType: {
+  type: String,
+  enum: ['normal', 'google'],
+  required: true,
+  default: 'normal'
+},
+
     uid: {
       type: String, // Only for Google users
     },

@@ -4,6 +4,8 @@ const User = require("../models/user");
 const mailSender = require("../utils/mailSender");
 const { passwordUpdated } = require("../mail/templates/passwordUpdate");
 exports.resetPasswordToken = async (req, res) => {
+    console.log("⚡ resetPasswordToken route hit");
+
     try {
       const { email } = req.body;
       console.log("Request received to reset password for:", email);

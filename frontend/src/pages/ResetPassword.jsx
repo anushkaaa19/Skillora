@@ -17,6 +17,7 @@ const ResetPassword = () => {
   const handleReset = async (e) => {
     e.preventDefault();
     setLoading(true);
+    console.log("API URL:", process.env.REACT_APP_API_URL);
 
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/v1/auth/reset-password`, {

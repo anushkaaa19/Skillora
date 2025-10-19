@@ -1,7 +1,7 @@
 const admin = require("firebase-admin");
 
 // Step 1: Parse JSON from env
-const serviceAccount = JSON.parse(process.env.FIREBASE_ADMIN_JSON);
+const serviceAccount = require("./serviceAccountKey.json");
 
 // Step 2: Fix private_key formatting
 serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');

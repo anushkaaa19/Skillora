@@ -20,6 +20,7 @@
     "@tanstack/react-query": "^5.77.2",
     "axios": "^1.9.0",
     "class-variance-authority": "^0.7.1",
+    "core-js": "^3.46.0",
     "date-fns": "^4.1.0",
     "firebase": "^11.6.1",
     "framer-motion": "^12.14.0",
