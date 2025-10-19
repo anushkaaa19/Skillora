@@ -8,7 +8,9 @@ import { useAuthStore } from '../redux/slices/authSlice'; // ✅ make sure this 
 
 const CourseCard = ({ course, onAddToCart }) => {
   const { user } = useAuthStore(); // ✅ hook at the top
-  const isStudent = user?.accountType === "student"; // ✅ define this before usage
+const isStudent =
+  user?.accountType?.toLowerCase() === "student";
+
 
   if (!course) return null;
 

@@ -60,7 +60,7 @@ exports.createCourse = async (req, res) => {
         // create new course - entry in DB
         const newCourse = await Course.create({
             courseName, courseDescription, instructor: instructorId, whatYouWillLearn, price, category: categoryDetails._id,
-            tag, status, instructions, thumbnail: thumbnailDetails.secure_url, createdAt: Date.now(),
+            tag, status:"Published", instructions, thumbnail: thumbnailDetails.secure_url, createdAt: Date.now(),
         });
 
         // add course id to instructor courses list, this is bcoz - it will show all created courses by instructor 
@@ -107,17 +107,22 @@ exports.createCourse = async (req, res) => {
 exports.getAllCourses = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 1000;
     const skip = (page - 1) * limit;
 
-    // Optional: Filter by category or instructor if needed
+    // Optional filters
     const category = req.query.category;
     const instructor = req.query.instructor;
-
     const query = {};
 
     if (category) query.category = category;
     if (instructor) query.instructor = instructor;
+
+    // 🧠 Debug logs
+    console.log("===== [getAllCourses] =====");
+    console.log("Query params:", req.query);
+    console.log("Built query:", query);
+    console.log("Pagination -> page:", page, "limit:", limit, "skip:", skip);
 
     const allCourses = await Course.find(query, {
       courseName: true,
@@ -145,11 +150,13 @@ exports.getAllCourses = async (req, res) => {
         select: "rating",
       });
 
-    // Total count (for frontend pagination UI)
+    console.log("Fetched raw courses:", allCourses.length);
+
     const totalCourses = await Course.countDocuments(query);
+    console.log("Total courses in DB:", totalCourses);
 
     const coursesWithRatings = allCourses.map((course) => {
-      const reviews = course.ratingAndReviews;
+      const reviews = course.ratingAndReviews || [];
       const avgRating =
         reviews.length > 0
           ? reviews.reduce((sum, r) => sum + Number(r.rating), 0) / reviews.length
@@ -161,6 +168,9 @@ exports.getAllCourses = async (req, res) => {
       };
     });
 
+    console.log("Courses after rating mapping:", coursesWithRatings.length);
+    console.log("=============================\n");
+
     return res.status(200).json({
       success: true,
       data: coursesWithRatings,
@@ -169,7 +179,7 @@ exports.getAllCourses = async (req, res) => {
       currentPage: page,
     });
   } catch (error) {
-    console.log(error);
+    console.log("❌ Error in getAllCourses:", error);
     res.status(500).json({
       success: false,
       message: "Error fetching courses",

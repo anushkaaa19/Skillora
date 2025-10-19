@@ -18,7 +18,8 @@ import Footer from '../components/Footer';
 
 const CourseDetail = () => {
     const { user } = useAuthStore();
-const isStudent = user?.accountType === "student";
+const isStudent =   user?.accountType?.toLowerCase() === "student";
+
 
   const { courseId } = useParams();
   const navigate = useNavigate();

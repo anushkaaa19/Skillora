@@ -1,4 +1,3 @@
-// components/ReviewSection.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Star } from 'lucide-react';
@@ -18,11 +17,11 @@ const ReviewSection = ({ courseId }) => {
 
   const fetchReviews = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/v1/course/getReviews`);
-      const courseReviews = res.data.data.filter((r) => r.course._id === courseId);
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/v1/course/getAllRatingReview`);
+      const courseReviews = res.data.data.filter(r => r.course && r.course._id === courseId);
       setAllReviews(courseReviews);
 
-      const isReviewed = courseReviews.find((r) => r.user._id === user?._id);
+      const isReviewed = courseReviews.find(r => r.user && r.user._id === user?._id);
       setAlreadyReviewed(!!isReviewed);
     } catch (err) {
       console.error("❌ Can't fetch reviews", err);
@@ -30,6 +29,8 @@ const ReviewSection = ({ courseId }) => {
   };
 
   const submitReview = async () => {
+    if (!review.trim()) return toast({ title: 'Review cannot be empty', variant: 'destructive' });
+
     try {
       setLoading(true);
       await axios.post(
@@ -63,17 +64,14 @@ const ReviewSection = ({ courseId }) => {
     <div className="mt-8 p-6 border border-space-light bg-space-light/20 rounded-lg space-y-4">
       <h2 className="text-xl font-bold text-white">Course Reviews</h2>
 
-      {/* Show form only if not already reviewed */}
       {!alreadyReviewed && (
         <div className="space-y-2">
           <p className="text-white font-medium">Leave your review:</p>
           <div className="flex space-x-1">
-            {[1, 2, 3, 4, 5].map((n) => (
+            {[1, 2, 3, 4, 5].map(n => (
               <Star
                 key={n}
-                className={`h-5 w-5 cursor-pointer ${
-                  n <= rating ? 'text-yellow-400' : 'text-gray-500'
-                }`}
+                className={`h-5 w-5 cursor-pointer ${n <= rating ? 'text-yellow-400' : 'text-gray-500'}`}
                 fill={n <= rating ? 'currentColor' : 'none'}
                 onClick={() => setRating(n)}
               />
@@ -84,7 +82,7 @@ const ReviewSection = ({ courseId }) => {
             rows={3}
             placeholder="Write your review here..."
             value={review}
-            onChange={(e) => setReview(e.target.value)}
+            onChange={e => setReview(e.target.value)}
           />
           <Button onClick={submitReview} disabled={loading}>
             {loading ? 'Submitting...' : 'Submit Review'}
@@ -92,13 +90,12 @@ const ReviewSection = ({ courseId }) => {
         </div>
       )}
 
-      {/* All reviews */}
       <div className="space-y-4 mt-6">
-        {allReviews.map((r) => (
+        {allReviews.map(r => (
           <div key={r._id} className="p-4 bg-space-light/30 rounded border border-space-light">
             <div className="flex items-center justify-between">
               <span className="text-white font-semibold">
-                {r.user.firstName} {r.user.lastName}
+                {r.user?.firstName} {r.user?.lastName}
               </span>
               <div className="flex">
                 {[...Array(5)].map((_, i) => (

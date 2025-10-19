@@ -20,7 +20,8 @@ export const useCourseStore = create((set) => ({
         const res = await axios.get(
           `${process.env.REACT_APP_API_URL}/v1/course/getAllCourses?page=${page}&limit=${limit}`
         );
-  
+        console.log("All courses from store:", res);
+
         const data = res.data?.data || [];
         const total = res.data?.totalCourses || 0;
         const pages = res.data?.totalPages || 1;

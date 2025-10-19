@@ -1,32 +1,39 @@
 const nodemailer = require('nodemailer');
 
-const mailSender = async (email, title, body) => {
-    try {
-        const transporter = nodemailer.createTransport({
-            host: process.env.MAIL_HOST, // should be 'smtp.gmail.com'
-            port: 465, // or 587
-            secure: true, // true for port 465, false for port 587
-            auth: {
-                user: process.env.MAIL_USER,
-                pass: process.env.MAIL_PASS
-            },
-            tls: {
-                rejectUnauthorized: false // use only in dev to bypass cert errors
-            },
-            debug:true
-        });
+const mailSender = async (email, subject, htmlBody) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      host: process.env.MAIL_HOST,
+      port: Number(process.env.MAIL_PORT) || 465,
+      secure: Number(process.env.MAIL_PORT) === 465,
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
+      logger: true,
+      debug: true,
+    });
 
-        const info = await transporter.sendMail({
-            from: `"Skillora" <${process.env.MAIL_USER}>`,
-            to: email,
-            subject: title,
-            html: body
-        });
+    // Test SMTP connection
+    await transporter.verify();
+    console.log('[mailSender] SMTP verified successfully');
 
-        return info;
-    } catch (error) {
-        console.log('Error while sending mail (mailSender):', error.message);
-    }
+    const info = await transporter.sendMail({
+      from: `"Skillora" <${process.env.MAIL_USER}>`,
+      to: email,
+      subject,
+      html: htmlBody,
+    });
+
+    console.log('[mailSender] Email sent:', info.messageId);
+    return true;
+  } catch (error) {
+    console.error('[mailSender] Failed to send email:', error.message);
+    return false;
+  }
 };
 
 module.exports = mailSender;

@@ -10,61 +10,53 @@ const cookie = require('cookie');
 const mailSender = require('../utils/mailSender');
 const otpTemplate = require('../mail/templates/emailVerificationTemplate');
 const { passwordUpdated } = require("../mail/templates/passwordUpdate");
+const admin = require('../config/firebaseAdmin'); // Firebase Admin SDK
 
 // ================ SEND-OTP For Email Verification ================
 exports.sendOTP = async (req, res) => {
-    try {
-      const { email } = req.body;
-  
-      console.log('[sendOTP] Received request to send OTP to:', email);
-  
-      // Check if user already exists
-      const checkUserPresent = await User.findOne({ email });
-      console.log('[sendOTP] Result of User.findOne:', checkUserPresent);
-  
-      if (checkUserPresent) {
-        console.log('[sendOTP] User already registered. Email:', email);
-        return res.status(409).json({
-          success: false,
-          message: 'User is already registered',
-        });
-      }
-  
-      // Generate OTP
-      const otp = optGenerator.generate(6, {
-        upperCaseAlphabets: false,
-        lowerCaseAlphabets: false,
-        specialChars: false,
-      });
-  
-      const name = email.split('@')[0].split('.').map(part => part.replace(/\d+/g, '')).join(' ');
-      console.log('[sendOTP] Generated OTP:', otp);
-      console.log('[sendOTP] Name from email:', name);
-  
-      // Send email
-      const emailSent = await mailSender(email, 'OTP Verification Email', otpTemplate(otp, name));
-      console.log('[sendOTP] Email send status:', emailSent ? 'Success' : 'Failed');
-  
-      // Store OTP in DB
-      const savedOTP = await OTP.create({ email, otp });
-      console.log('[sendOTP] OTP saved to DB:', savedOTP);
-  
-      // Success response
-      return res.status(200).json({
-        success: true,
-        otp,
-        message: 'OTP sent successfully',
-      });
-    } catch (error) {
-      console.log('[sendOTP] Error occurred:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Internal server error while generating OTP',
-        error: error.message,
-      });
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
     }
-  };
-  
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({ success: false, message: 'User already registered' });
+    }
+
+    // Generate OTP
+    const otp = optGenerator.generate(6, { upperCaseAlphabets: false, lowerCaseAlphabets: false, specialChars: false });
+    const name = email.split('@')[0].split('.').map(part => part.replace(/\d+/g, '')).join(' ');
+
+    console.log('[sendOTP] Generated OTP:', otp);
+
+    // Send email
+    const emailSent = await mailSender(email, 'OTP Verification Email', otpTemplate(otp, name));
+    console.log('[sendOTP] Email send status:', emailSent ? 'Success' : 'Failed');
+
+    if (!emailSent) {
+      return res.status(500).json({ success: false, message: 'Failed to send OTP email' });
+    }
+
+    // Save OTP in DB
+    await OTP.create({ email, otp });
+
+    return res.status(200).json({
+      success: true,
+      message: 'OTP sent successfully'
+    });
+
+  } catch (error) {
+    console.log('[sendOTP] Error:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error while generating OTP'
+    });
+  }
+};
 
 // ================ SIGNUP ================
 exports.signup = async (req, res) => {
@@ -157,7 +149,7 @@ exports.signup = async (req, res) => {
         contactNumber,
         accountType,
         additionalDetails: profileDetails._id,
-        loginType: 'normal', // ✅ FIXED
+        loginType: 'normal',
         approved: approved,
         image: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName} ${lastName}`
       });
@@ -170,19 +162,14 @@ exports.signup = async (req, res) => {
       });
     }catch (error) {
       console.log('❌ Error during signup:', error.message);
-      console.error('STACK TRACE:', error.stack);  // 👈 Add this
+      console.error('STACK TRACE:', error.stack);
       return res.status(500).json({
         success: false,
         message: 'User cannot be registered, Please try again..!',
         error: error.message
       });
     }
-    
-  };
-  
-
-
-const admin = require('../config/firebaseAdmin'); // Firebase Admin SDK
+};
 
 exports.login = async (req, res) => {
     try {
@@ -190,10 +177,18 @@ exports.login = async (req, res) => {
         console.log("🔥 Login route hit");
         console.log("📨 Request body:", req.body);
 
+        // Common population configuration for both login types
+        const populateConfig = [
+            { path: "additionalDetails" },
+            { 
+                path: "courses", 
+                select: "courseName thumbnail instructor" 
+            }
+        ];
+
         // ========== Case 1: Google OAuth Login ==========
         if (token) {
-          console.log("🔐 Google login path");
-          console.log("📛 Token:", token);
+            console.log("🔐 Google login path");
             const decodedToken = await admin.auth().verifyIdToken(token);
 
             // Check token email matches request email
@@ -202,7 +197,7 @@ exports.login = async (req, res) => {
             }
 
             // Check if user exists
-            let user = await User.findOne({ email }).populate("additionalDetails");
+            let user = await User.findOne({ email }).populate(populateConfig);
 
             // If not, create the user
             if (!user) {
@@ -219,14 +214,16 @@ exports.login = async (req, res) => {
                     lastName,
                     email,
                     contactNumber: null,
-                    password: "", // No password for Google auth
-                    accountType: "Student", // Default role
-                    loginType: "google",     // ✅ add this line
-
+                    password: "",
+                    accountType: "Student",
+                    loginType: "google",
                     additionalDetails: profileDetails._id,
                     approved: true,
                     image: decodedToken.picture || `https://api.dicebear.com/5.x/initials/svg?seed=${firstName} ${lastName}`
                 });
+
+                // Populate the newly created user
+                user = await User.findById(user._id).populate(populateConfig);
             }
 
             // Generate token
@@ -243,7 +240,7 @@ exports.login = async (req, res) => {
             user = user.toObject();
             user.token = jwtToken;
             user.password = undefined;
-
+            
             // Set cookie
             const cookieOptions = {
                 expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
@@ -256,7 +253,7 @@ exports.login = async (req, res) => {
                 success: true,
                 user,
                 token: jwtToken,
-                message: "User logged in with Google successfully",
+                message: "User logged in successfully",
             });
         }
 
@@ -268,10 +265,8 @@ exports.login = async (req, res) => {
             });
         }
 
-        let user = await User.findOne({ email })
-        .populate("additionalDetails")
-        .populate("courses", "courseName"); // <-- this populates courseName only
-      
+        let user = await User.findOne({ email }).populate(populateConfig);
+
         if (!user) {
             return res.status(401).json({
                 success: false,
@@ -309,7 +304,7 @@ exports.login = async (req, res) => {
             secure: true,
         };
 
-        res.cookie("token", jwtToken, cookieOptions).status(200).json({
+        return res.cookie("token", jwtToken, cookieOptions).status(200).json({
             success: true,
             user,
             token: jwtToken,
@@ -317,7 +312,7 @@ exports.login = async (req, res) => {
         });
 
     } catch (error) {
-        console.log("Error in login:", error);
+        console.log("❌ Error in login:", error);
         return res.status(500).json({
             success: false,
             message: "Internal Server Error",
@@ -325,8 +320,6 @@ exports.login = async (req, res) => {
         });
     }
 };
-
-
 
 // ================ CHANGE PASSWORD ================
 exports.changePassword = async (req, res) => {
@@ -366,7 +359,6 @@ exports.changePassword = async (req, res) => {
             })
         }
 
-
         // hash password
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
@@ -374,7 +366,6 @@ exports.changePassword = async (req, res) => {
         const updatedUserDetails = await User.findByIdAndUpdate(req.user.id,
             { password: hashedPassword },
             { new: true });
-
 
         // send email
         try {
@@ -386,7 +377,6 @@ exports.changePassword = async (req, res) => {
                     `Password updated successfully for ${updatedUserDetails.firstName} ${updatedUserDetails.lastName}`
                 )
             );
-            // console.log("Email sent successfully:", emailResponse);
         }
         catch (error) {
             console.error("Error occurred while sending email:", error);
@@ -397,14 +387,12 @@ exports.changePassword = async (req, res) => {
             });
         }
 
-
         // return success response
         res.status(200).json({
             success: true,
             mesage: 'Password changed successfully'
         });
     }
-
     catch (error) {
         console.log('Error while changing passowrd');
         console.log(error)

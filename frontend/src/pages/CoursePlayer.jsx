@@ -13,6 +13,7 @@ const CoursePlayer = () => {
 
   const token = JSON.parse(localStorage.getItem("auth-storage"))?.state?.user?.token;
 
+  // Fetch full course details and completed videos
   useEffect(() => {
     const fetchCourse = async () => {
       try {
@@ -27,14 +28,13 @@ const CoursePlayer = () => {
 
         const { courseDetails, completedVideos } = res.data.data;
 
-        setCourseDetails(courseDetails);
+        setCourseDetails(courseDetails || null);
         setCompletedVideos(completedVideos || []);
 
-        const firstSection = courseDetails.courseContent?.[0];
+        // Set first video as default
+        const firstSection = courseDetails?.courseContent?.[0];
         const firstVideo = firstSection?.subSection?.[0];
-        if (firstVideo?.videoUrl) {
-          setCurrentVideo(firstVideo);
-        }
+        if (firstVideo?.videoUrl) setCurrentVideo(firstVideo);
       } catch (err) {
         console.error("❌ Failed to fetch course:", err.response?.data || err);
       }
@@ -43,8 +43,8 @@ const CoursePlayer = () => {
     fetchCourse();
   }, [courseId, token]);
 
+  // Mark video as completed
   const markVideoCompleted = async (subsectionId) => {
-
     try {
       const res = await axios.post(
         `${process.env.REACT_APP_API_URL}/v1/course/updateCourseProgress`,
@@ -61,13 +61,11 @@ const CoursePlayer = () => {
     }
   };
 
-  if (!courseDetails) {
-    return <div className="text-white p-8">🚀 Loading course...</div>;
-  }
+  if (!courseDetails) return <div className="text-white p-8">🚀 Loading course...</div>;
 
   return (
     <div className="flex min-h-screen bg-space text-white">
-      {/* === Sidebar === */}
+      {/* Sidebar */}
       <div className="w-72 border-r border-space-light bg-space-light/10 p-4 space-y-4 overflow-y-auto">
         <h2 className="text-lg font-semibold text-space-accent mb-2">Course Content</h2>
         {courseDetails.courseContent.map((section) => (
@@ -77,10 +75,7 @@ const CoursePlayer = () => {
               {section.subSection.map((sub) => (
                 <li
                   key={sub._id}
-                  onClick={() => {
-                    console.log("▶ Switching to video:", sub.title);
-                    setCurrentVideo(sub);
-                  }}
+                  onClick={() => setCurrentVideo(sub)}
                   className={`flex items-center justify-between px-2 py-1 rounded cursor-pointer text-sm ${
                     currentVideo?._id === sub._id
                       ? "bg-space-accent/20 text-space-accent"
@@ -98,7 +93,7 @@ const CoursePlayer = () => {
         ))}
       </div>
 
-      {/* === Video Player + Info === */}
+      {/* Video Player */}
       <div className="flex-1 p-6">
         {currentVideo ? (
           <div>
@@ -127,8 +122,9 @@ const CoursePlayer = () => {
           <div className="text-gray-400">📽 Select a video to start learning</div>
         )}
       </div>
-      <ReviewSection courseId={courseId} />
 
+      {/* Reviews */}
+      <ReviewSection courseId={courseId} />
     </div>
   );
 };

@@ -49,7 +49,8 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            {isAuthenticated && user?.accountType === 'student' && (
+            {isAuthenticated &&   user?.accountType?.toLowerCase() === "student"
+ && (
               <Link to="/cart" className="relative text-white">
                 <ShoppingCart className="h-6 w-6" />
                 {cartCount > 0 && (

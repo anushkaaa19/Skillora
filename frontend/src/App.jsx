@@ -66,7 +66,7 @@ function App() {
 } />
 
 <Route path="/student/dashboard" element={
-  <RoleProtectedRoute allowedRoles={["student"]}>
+  <RoleProtectedRoute allowedRoles={["student","Student"]}>
     <StudentDashboard />
   </RoleProtectedRoute>
 } />
@@ -84,13 +84,13 @@ function App() {
 } />
 
 <Route path="/cart" element={
-  <RoleProtectedRoute allowedRoles={["student"]}>
+  <RoleProtectedRoute allowedRoles={["student","Student"]}>
     <Cart />
   </RoleProtectedRoute>
 } />
 
 <Route path="/certificate/:courseId" element={
-  <RoleProtectedRoute allowedRoles={["student"]}>
+  <RoleProtectedRoute allowedRoles={["student","Student"]}>
     <Certificate />
   </RoleProtectedRoute>
 } />

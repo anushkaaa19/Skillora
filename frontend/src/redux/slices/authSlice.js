@@ -2,63 +2,48 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-let hasHydrated = false;
-
 export const useAuthStore = create(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       token: null,
       isAuthenticated: false,
       isLoading: false,
+      _hasHydrated: false,
+
+      setHasHydrated: (state) => set({ _hasHydrated: state }),
 
       loginStart: () => set({ isLoading: true }),
-      loginSuccess: (user) =>
-        
+      
+      loginSuccess: ({ user, token }) => {
         set({
-
           user,
-          token: user.token,
+          token,
           isAuthenticated: true,
           isLoading: false,
-        }),
-      
-      loginFail: () =>
-        set({
-          user: null,
-          token: null,
-          isAuthenticated: false,
-          isLoading: false,
-        }),
+        });
+      },
 
-      logout: () =>
-        set({
-          user: null,
-          token: null,
-          isAuthenticated: false,
-          isLoading: false,
-        }),
+      loginFail: () => set({
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        isLoading: false,
+      }),
+
+      logout: () => set({
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        isLoading: false,
+      }),
     }),
     {
       name: "auth-storage",
       getStorage: () => localStorage,
-      onRehydrateStorage: () => () => {
-        hasHydrated = true;
+      onRehydrateStorage: () => (state) => {
+        if (state) state.setHasHydrated(true);
       },
     }
   )
 );
-
-// ✅ Expose hydration status to use in components
-useAuthStore.persist = {
-  hasHydrated: () => hasHydrated,
-  onFinishHydration: (cb) => {
-    const interval = setInterval(() => {
-      if (hasHydrated) {
-        clearInterval(interval);
-        cb();
-      }
-    }, 50);
-    return () => clearInterval(interval);
-  },
-};

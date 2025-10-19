@@ -92,10 +92,11 @@ const Cart = () => {
             });
           }
         },
-        prefill: {
-          name: "",
-          email: "",
-        },
+       prefill: {
+  name: "Test User",
+  email: "test@example.com",
+},
+
         theme: {
           color: "#6366f1",
         },
